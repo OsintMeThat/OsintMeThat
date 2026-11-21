@@ -80,5 +80,37 @@
    "image": "/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/cover.jpg",
    "maps": []
   }
+ ],
+ "maps": [
+  {
+   "address": "/bab-el-mandab-2026-map/",
+   "title": "The Bab al-Mandab front on one map",
+   "summary": "Every vehicle left on the road and every video geolocated on this front, September to November 2026. Read the full analysis.",
+   "date": "2026-11-20",
+   "date_label": "20 November 2026",
+   "category": "Conflict Watch",
+   "author": "OSINT Me That",
+   "layout": "map",
+   "image": "/bab-el-mandab-2026-map/cover.jpg",
+   "article": {
+    "title": "The fall of the Bab al-Mandab front, Sep-Nov 2026",
+    "address": "/bab-el-mandab-2026/"
+   }
+  },
+  {
+   "address": "/operation-absolute-resolve-map/",
+   "title": "Operation Absolute Resolve, the map",
+   "summary": "Every located point of the night of 3 January 2026 in Venezuela, on one interactive map.",
+   "date": "2026-03-12",
+   "date_label": "12 March 2026",
+   "category": "Investigations",
+   "author": "OSINT Me That",
+   "layout": "map",
+   "image": "/operation-absolute-resolve-map/cover.jpg",
+   "article": {
+    "title": "Operation Absolute Resolve: The Night Maduro was Taken – A Full OSINT Reconstruction",
+    "address": "/2026/03/12/operation-absolute-resolve-the-night-maduro-was-taken-a-full-osint-reconstruction/"
+   }
+  }
  ]
 }

@@ -208,3 +208,20 @@ code { font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; 
   .sitenav ul::-webkit-scrollbar { display: none; }
   .sitenav li { flex: none; }
 }
+
+/* Outside embeds wait for a press: nothing reaches YouTube, Instagram or Google before it */
+.embed-load {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 16px; text-align: center; text-decoration: none; color: #fff;
+  background: linear-gradient(135deg, #1c3e6a, #0f2440); border-radius: inherit;
+}
+.embed-load:hover { color: #fff; background: linear-gradient(135deg, #22497c, #12294a); }
+.embed-label { font-weight: 600; font-size: 17px; }
+.embed-label::before { content: '▶  '; }
+.embed-note { font-size: 13.5px; opacity: 0.8; }
+.post-body > .embed-load, .post-body p > .embed-load { position: relative; min-height: 220px; border-radius: 8px; }
+.embed-live { border: 0; }
+.az-from { color: var(--muted); text-decoration: none; font-size: 14.5px; }
+.az-from::before { content: 'From: '; }
+.az-from:hover { color: var(--teal-dark); }
+.az-maps .az-category::after { content: ' · Map'; }

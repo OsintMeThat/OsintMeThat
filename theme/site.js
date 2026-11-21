@@ -1,7 +1,22 @@
-// Two small helps, both optional: the page reads fine without them.
+// Three small helps, all optional: the page reads fine without them.
 // 1. The sidebar's latest articles, read from the list Azimut keeps (/articles.json).
 // 2. Animated pictures (short looping videos) play only while on screen.
+// 3. An outside video, post or map loads only when its placeholder is pressed.
 (function () {
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest && event.target.closest('a.embed-load');
+    if (!link) return;
+    event.preventDefault();
+    var frame = document.createElement('iframe');
+    frame.src = link.dataset.src;
+    frame.title = link.dataset.title || '';
+    frame.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+    frame.allowFullscreen = true;
+    frame.className = 'embed-live';
+    if (link.dataset.style) frame.setAttribute('style', link.dataset.style);
+    link.replaceWith(frame);
+  });
+
   var box = document.querySelector('[data-latest]');
   if (box && window.fetch) {
     fetch('/articles.json', { cache: 'no-cache' })

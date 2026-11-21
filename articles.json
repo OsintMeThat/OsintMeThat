@@ -51,8 +51,8 @@
    "image": "/2026/01/12/the-shadow-of-operation-absolute-resolve/cover.jpg",
    "maps": [
     {
-     "title": "The map on Google My Maps",
-     "address": "https://www.google.com/maps/d/viewer?mid=18l5LA98CVgFqlXxnzPogEfny_a6wDiQ"
+     "title": "The shadow of Operation Absolute Resolve, the map",
+     "address": "/shadow-of-operation-absolute-resolve-map/"
     }
    ]
   },
@@ -98,6 +98,21 @@
    "article": {
     "title": "Operation Absolute Resolve: The Night Maduro was Taken – A Full OSINT Reconstruction",
     "address": "/2026/03/12/operation-absolute-resolve-the-night-maduro-was-taken-a-full-osint-reconstruction/"
+   }
+  },
+  {
+   "address": "/shadow-of-operation-absolute-resolve-map/",
+   "title": "The shadow of Operation Absolute Resolve, the map",
+   "summary": "Every point of view used to place the most likely capture zone on 3 January 2026, on one interactive map. Read the full analysis.",
+   "date": "2026-01-12",
+   "date_label": "12 January 2026",
+   "category": "Investigations",
+   "author": "OSINT Me That",
+   "layout": "map",
+   "image": "/shadow-of-operation-absolute-resolve-map/cover.jpg",
+   "article": {
+    "title": "The shadow of Operation Absolute Resolve",
+    "address": "/2026/01/12/the-shadow-of-operation-absolute-resolve/"
    }
   }
  ],

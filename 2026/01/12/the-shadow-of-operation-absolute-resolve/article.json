@@ -7,13 +7,10 @@
  "author": "OSINT Me That",
  "layout": "article",
  "image": "/2026/01/12/the-shadow-of-operation-absolute-resolve/cover.jpg",
- "links": [],
- "maps": [
-  {
-   "title": "The map on Google My Maps",
-   "address": "https://www.google.com/maps/d/viewer?mid=18l5LA98CVgFqlXxnzPogEfny_a6wDiQ"
-  }
+ "links": [
+  "shadow-of-operation-absolute-resolve-map"
  ],
+ "maps": [],
  "place": {
   "lat": 10.443637,
   "lon": -66.9184,

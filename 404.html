@@ -29,22 +29,29 @@
 .osm-bar *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit}
 .osm-bar .osm-wrap{display:flex;align-items:center;gap:36px;max-width:1240px;min-height:68px;margin:0 auto;padding:0 32px}
 .osm-bar a{color:inherit;text-decoration:none;background:none}
+.osm-bar a:focus-visible{outline:2px solid #3fb1c2;outline-offset:3px;border-radius:4px}
+.osm-bar nav a:focus-visible,.osm-bar .osm-about:focus-visible{outline:none;color:#fff;border-color:#3fb1c2}
 .osm-bar .osm-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:650;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
 .osm-bar .osm-brand img{display:block;width:34px;height:34px;max-width:none;border:0;border-radius:0;box-shadow:none}
 .osm-bar nav{flex:1;min-width:0}
 .osm-bar ul{display:flex;gap:26px;list-style:none}
 .osm-bar li{list-style:none}
 .osm-bar li::before,.osm-bar li::marker{content:none}
-.osm-bar nav a{display:block;padding:22px 0 20px;border-bottom:2px solid transparent;color:#93a6bb;white-space:nowrap}
-.osm-bar nav a:hover,.osm-bar nav a[aria-current]{color:#fff;border-color:#3fb1c2}
-.osm-bar .osm-az{color:#e9eef4}
-.osm-bar .osm-mark{display:inline-block;width:9px;height:14px;margin-right:7px;vertical-align:-1px}
-.osm-bar .osm-support{padding:8px 15px;border-radius:4px;background:#f2b33d;color:#17130b;font-size:14.5px;font-weight:650;white-space:nowrap}
-.osm-bar .osm-support:hover{background:#f6c561;color:#17130b}
-@media (max-width:1100px){.osm-bar nav{overflow-x:auto;scrollbar-width:none}}
-@media (max-width:900px){.osm-bar .osm-wrap{flex-wrap:wrap;gap:0 16px;padding-top:12px}.osm-bar nav{order:3;flex-basis:100%}.osm-bar nav a{padding:12px 0 10px}.osm-bar .osm-support{margin-left:auto}}
-@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{flex-wrap:wrap;gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar .osm-support{padding:7px 13px}.osm-bar .osm-support span{display:none}}
-</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li><li><a href="/about-contact/">About</a></li></ul></nav><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></header>
+.osm-bar nav a,.osm-bar .osm-about{display:block;padding:22px 0 20px;border-bottom:2px solid transparent;color:#93a6bb;white-space:nowrap}
+.osm-bar nav a:hover,.osm-bar nav a[aria-current],.osm-bar .osm-about:hover,.osm-bar .osm-about[aria-current]{color:#fff;border-color:#3fb1c2}
+.osm-bar .osm-end{display:flex;align-items:center;margin-left:auto;white-space:nowrap}
+.osm-bar .osm-about{margin-right:18px}
+.osm-bar .osm-az,.osm-bar .osm-support{display:inline-block;padding:7px 14px;border:1px solid transparent;border-radius:4px;font-size:14.5px;font-weight:650;line-height:20px}
+.osm-bar .osm-az{margin-right:8px;color:#e9eef4;border-color:rgba(233,238,244,.32)}
+.osm-bar .osm-az:hover,.osm-bar .osm-az[aria-current]{background:rgba(233,238,244,.08);border-color:rgba(233,238,244,.7);color:#fff}
+.osm-bar .osm-mark{display:inline-block;width:9px;height:14px;margin-right:7px;vertical-align:-2px}
+.osm-bar .osm-phone{display:none}
+.osm-bar .osm-support{background:#f2b33d;border-color:#f2b33d;color:#17130b}
+.osm-bar .osm-support:hover{background:#f6c561;border-color:#f6c561;color:#17130b}
+@media (max-width:1180px){.osm-bar .osm-wrap{gap:24px}.osm-bar ul{gap:20px}.osm-bar .osm-support span{display:none}}
+@media (max-width:960px){.osm-bar .osm-wrap{flex-wrap:wrap;gap:0 16px;padding-top:12px;padding-bottom:4px}.osm-bar nav{order:3;flex-basis:100%}.osm-bar .osm-about,.osm-bar .osm-end .osm-az{display:none}.osm-bar .osm-phone{display:list-item}.osm-bar ul{flex-wrap:wrap;align-items:center;gap:0 20px}.osm-bar nav a{padding:12px 0 10px}.osm-bar nav .osm-az{padding:4px 10px;margin:4px 0;border-bottom-width:1px}}
+@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar nav .osm-az{font-size:14px;font-weight:600}.osm-bar .osm-support{padding:7px 13px}}
+</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li class="osm-phone"><a href="/about-contact/">About</a></li><li class="osm-phone"><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li></ul></nav><div class="osm-end"><a class="osm-about" href="/about-contact/">About</a><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></div></header>
 <main id="main">
 <div class="wrap read">
 <header class="page-head"><h1>Page not found</h1><p>This address leads nowhere. The articles are all on the <a href="/">home page</a>.</p></header>

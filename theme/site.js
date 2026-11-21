@@ -86,6 +86,7 @@
       .then(function (config) {
         if (config.open === false) { say('Sending is closed for now. Ask on the Discord.', true); return; }
         if (config.invite === true) { invite.hidden = false; invite.querySelector('input').required = true; }
+        if (Number(config.max_bytes) > 0) maxBytes = Number(config.max_bytes);
         var script = document.createElement('script');
         script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=osmTurnstileReady';
         script.async = true;
@@ -124,7 +125,7 @@
       if (!form.checkValidity()) { form.reportValidity(); return; }
       if (/\.azimut\.enc$/i.test(file.name)) { say('Send the bundle unsealed: export the case again without a password.', true); return; }
       if (!/\.azimut\.zip$/i.test(file.name)) { say('Choose the case bundle Azimut exports, a file ending in .azimut.zip.', true); return; }
-      if (file.size > maxBytes) { say('This bundle is over ' + (maxBytes / 1048576) + ' MB. Leave out what the article does not use and export again.', true); return; }
+      if (file.size > maxBytes) { say('This bundle is over ' + Math.max(1, Math.round(maxBytes / 1048576)) + ' MB. Leave out what the article does not use and export again.', true); return; }
       send.disabled = true;
       bar.hidden = false; bar.value = 0;
       say('Checking…');
@@ -139,11 +140,14 @@
         .then(function () {
           form.reset(); bar.hidden = true;
           form.classList.add('sent');
-          say('Received. I will write to you once I have read it.');
+          say('Received. I will write to you once I have read it. Your receipt: ' + id + ' (it is what a request to delete it names).');
         })
         .catch(function (err) {
           bar.hidden = true;
           say(err.message, true);
+        })
+        .then(function () {
+          // a Turnstile token serves one /start: a fresh one for the next send
           token = '';
           if (widget !== null && window.turnstile) window.turnstile.reset(widget);
           ready();

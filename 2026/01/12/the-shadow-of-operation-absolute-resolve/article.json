@@ -13,5 +13,10 @@
    "title": "The map on Google My Maps",
    "address": "https://www.google.com/maps/d/viewer?mid=18l5LA98CVgFqlXxnzPogEfny_a6wDiQ"
   }
- ]
+ ],
+ "place": {
+  "lat": 10.443637,
+  "lon": -66.9184,
+  "name": "Caracas, Venezuela"
+ }
 }

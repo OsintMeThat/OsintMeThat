@@ -10,5 +10,10 @@
  "links": [
   "bab-el-mandab-2026-map"
  ],
- "maps": []
+ "maps": [],
+ "place": {
+  "lat": 12.725004,
+  "lon": 43.5075,
+  "name": "Bab al-Mandab, Yemen"
+ }
 }

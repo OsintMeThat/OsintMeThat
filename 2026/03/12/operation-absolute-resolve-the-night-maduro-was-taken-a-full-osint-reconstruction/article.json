@@ -10,5 +10,10 @@
  "links": [
   "operation-absolute-resolve-map"
  ],
- "maps": []
+ "maps": [],
+ "place": {
+  "lat": 10.443637,
+  "lon": -66.9184,
+  "name": "Caracas, Venezuela"
+ }
 }

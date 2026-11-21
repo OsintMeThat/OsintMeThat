@@ -335,6 +335,29 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .steps { grid-template-columns: 1fr; }
   .cites li { grid-template-columns: 1fr; gap: 2px; }
 }
+/* A phone: the menu on two lines rather than cut, the support link left to the footer, the
+   newest article's summary on three lines, Azimut's pictures side by side to swipe. */
+@media (max-width: 600px) {
+  .top .wrap { padding-top: 14px; padding-bottom: 6px; }
+  .support { display: none; }
+  .nav ul { flex-wrap: wrap; gap: 0 18px; font-size: 14.5px; }
+  .nav a { padding: 8px 0 6px; }
+  .hero-text { padding-top: 28px; }
+  .hero-text p:last-child { font-size: 16px; }
+  .hero-foot .wrap { gap: 4px 16px; }
+  .outlets { gap: 2px 16px; font-size: 14px; }
+  .az-list:not(.az-maps) > .az-item:first-child .az-summary { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .az-list:not(.az-maps) > .az-item:first-child .az-links, .tool .go { flex-direction: column; align-items: stretch; }
+  .az-list:not(.az-maps) > .az-item:first-child .az-links a, .tool .btn { text-align: center; }
+  .toolhead { gap: 20px; margin-bottom: 30px; }
+  .frames { display: flex; gap: 12px; margin: 0 -18px; padding: 0 18px 4px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .frames::-webkit-scrollbar { display: none; }
+  .frames figure { flex: 0 0 82%; scroll-snap-align: start; scroll-margin-left: 18px; }
+  .frames img { height: 200px; }
+  .press p { font-size: 17px; }
+  .foot { padding-top: 40px; }
+  .foot .cols { gap: 26px 20px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .az-cover img { transition: none; }
 }

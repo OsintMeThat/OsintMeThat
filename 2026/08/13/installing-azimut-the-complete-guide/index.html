@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com https://www.instagram.com https://www.google.com https://osintmethat.github.io; base-uri 'self'; form-action 'none'">
+<title>Installing Azimut: the complete guide – OSINT Me That</title>
+<meta name="description" content="Azimut keeps a whole open-source investigation in one plain folder on your own machine: the media you collected, the examination you ran on it, the geolocation you established, the entities and links you confirmed, the notes you wrote, and…">
+<link rel="canonical" href="https://osintmethat.com/2026/08/13/installing-azimut-the-complete-guide/">
+<link rel="icon" href="/theme/icon.png">
+<link rel="apple-touch-icon" href="/theme/icon.png">
+<link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
+<link rel="stylesheet" href="/theme/site.css">
+<script src="/theme/site.js" defer></script>
+<meta property="og:site_name" content="OSINT Me That">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Installing Azimut: the complete guide">
+<meta property="og:description" content="Azimut keeps a whole open-source investigation in one plain folder on your own machine: the media you collected, the examination you ran on it, the geolocation you established, the entities and links you confirmed, the notes you wrote, and…">
+<meta property="og:url" content="https://osintmethat.com/2026/08/13/installing-azimut-the-complete-guide/">
+<meta property="og:image" content="https://osintmethat.com/2026/08/13/installing-azimut-the-complete-guide/cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@OsintMeThat">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="wrap">
+<a class="brand" href="/"><img src="/theme/logo.png" alt="" width="60" height="60"><span class="brand-name"><span>OSINT</span><span>Me That</span></span></a>
+<div class="masthead-actions"><a class="pill" href="/registration/">Join us</a><a class="pill" href="https://buymeacoffee.com/osintmethat" rel="noopener">Buy Me A Coffee</a></div>
+</div></header>
+<nav class="sitenav" aria-label="Sections"><div class="wrap"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/deep-dives/">Deep Dives</a></li><li><a href="/about-contact/">About / Contact</a></li></ul></div></nav>
+<div class="wrap layout">
+<main id="main">
+<article class="post"><header class="post-head"><a class="az-category" href="/methods-tools/">Methods &amp; Tools</a><h1>Installing Azimut: the complete guide</h1><p class="post-meta">Published on <time datetime="2026-08-13">13 August 2026</time></p></header><div class="post-body">
+<p class="has-text-align-justify"><strong><a href="https://github.com/OsintMeThat/azimut">Azimut</a></strong> keeps a whole <strong>open-source investigation</strong> in one plain folder on your own machine: the media you collected, the examination you ran on it, the geolocation you established, the entities and links you confirmed, the notes you wrote, and the exports you published.</p>
+
+<figure class="wp-block-image aligncenter size-large is-resized"><img src="/wp-content/uploads/2026/08/lockup-light-1024x194.png" alt="" class="wp-image-947" style="aspect-ratio:5.267914991302786;width:320px;height:auto" width="1022" height="194" loading="lazy" decoding="async"></figure>
+
+<p class="has-text-align-justify">It runs as a small server on&nbsp;<code>127.0.0.1</code>&nbsp;plus a normal browser tab. No account, no telemetry, no automatic upload. It is free and open source under <a href="https://github.com/OsintMeThat/azimut?tab=AGPL-3.0-1-ov-file">AGPL-3.0</a>.</p>
+
+<p class="has-text-align-justify">This guide covers the whole install: every path (ready-to-run binary,&nbsp;<code>pipx</code>, from source), what happens on first launch, the settings worth a minute, the optional capture extension, and what to do when something goes wrong. It is written to stay valid across releases, so it names no version numbers.</p>
+
+<p class="has-text-align-justify">If you only want it running, you do not need the whole page. These are the parts most people come for:</p>
+
+<ul class="wp-block-list">
+<li><a href="#path-a-the-ready-to-run-binary-recommended" data-type="internal" data-id="#path-a-the-ready-to-run-binary-recommended"><strong>Path A: the ready-to-run binary</strong>&nbsp;</a>- the fastest way in, nothing to install first</li>
+
+<li><strong><a href="#path-b-install-with-pipx-or-pip" data-type="internal" data-id="#path-b-install-with-pipx-or-pip">Path B: install with pipx</a></strong>&nbsp;- one line if you already have Python</li>
+
+<li><a href="#your-workspace-folder" data-type="internal" data-id="#your-workspace-folder"><strong>Your workspace folder</strong>&nbsp;</a>- where your cases live, and why upgrades never touch them</li>
+
+<li><strong><a href="#worth-setting-up-on-day-one" data-type="internal" data-id="#worth-setting-up-on-day-one">Worth setting up on day one</a></strong>&nbsp;- the four settings that pay off immediately</li>
+
+<li><strong><a href="#optional-the-capture-extension" data-type="internal" data-id="#optional-the-capture-extension">Optional: the capture extension</a></strong>&nbsp;- map screenshots filed straight into a case</li>
+
+<li><strong><a href="#troubleshooting" data-type="internal" data-id="#troubleshooting">Troubleshooting</a></strong>&nbsp;- the fix when something misbehaves</li>
+
+<li><strong><a href="#what-you-can-count-on">What you can count on</a></strong>&nbsp;- the guarantees, and what Azimut will never do</li>
+</ul>
+
+<h3 id="what-the-tool-is" class="wp-block-heading">What the tool is</h3>
+
+<p class="has-text-align-justify">A local OSINT workspace for reviewing media, building geolocation proofs and keeping case notes together. It is <strong>built for</strong> <strong>open-source</strong> investigators, journalists and researchers. Each case is a plain folder that can be reopened, archived or shared. Every tool works one-shot (a scratch session, no setup) or inside a case, a plain directory holding the whole investigation.</p>
+
+<p class="has-text-align-justify"><em>The name is the French word for azimuth, the compass bearing you sight along to fix a point on the map.</em></p>
+
+<h4 id="where-it-stands" class="wp-block-heading">Where it stands</h4>
+
+<p class="has-text-align-justify">Not all of the picture above is built. Azimut ships one complete daily workflow per version, and the honest summary is this: the geolocation chain runs end to end today: collect, examine, locate, prove, publish, document and the broader investigation layer is the objective, not yet the state.</p>
+
+<p class="has-text-align-justify">Two places tell you exactly where a given copy stands:&nbsp;<code><a href="https://github.com/OsintMeThat/azimut/blob/main/docs/SPEC.md">docs/SPEC.md</a></code>&nbsp;in the repository lists what is done and what is on the roadmap, in order, and the <a href="https://github.com/OsintMeThat/azimut/releases">Releases page</a> describes each version as it lands. A tab is either in your copy or it isn't, and nothing in this install guide changes either way.</p>
+
+<h4 id="what-it-records" class="wp-block-heading">What it records</h4>
+
+<p class="has-text-align-justify">Underneath every tool is one graph, per case, in SQLite. Entities are typed (person, organization, alias or username, account, email, phone, domain, IP, vehicle, place, event, media, proof...) and so are the links between them (owns, appears-in, located-at, same-as, posted, mentions, and free labels you add). Everything carries provenance: which tool produced it, from which source, when, and whether it is&nbsp;<strong>confirmed</strong>&nbsp;by you or merely&nbsp;<strong>suggested</strong>&nbsp;by a tool.</p>
+
+<p class="has-text-align-justify">That distinction is the design's backbone. Tools suggest; only an analyst action confirms. Azimut never issues an automated geolocation verdict, and every artifact records how it was produced.</p>
+
+<h4 id="what-it-will-never-do" class="wp-block-heading">What it will never do</h4>
+
+<p>Stated plainly, because it shapes what you should expect:</p>
+
+<ul class="wp-block-list">
+<li>No cloud, no account, no hosted service, no telemetry.</li>
+
+<li>No automated verdict. Azimut files facts for you to judge.</li>
+
+<li>No rebuilding of specialized OSINT services. It orchestrates them and brings selected results into the case with provenance.</li>
+
+<li>No block-evasion scraping. Your own session cookies are in scope; third-party downloader proxies are not.</li>
+
+<li>No auto-posting. Threads are prepared, never sent on your behalf.</li>
+
+<li>No paid key required for core work. Bring your own for optional providers.</li>
+</ul>
+
+<h3 id="before-you-install" class="wp-block-heading">Before you install</h3>
+
+<p class="has-text-align-justify"><strong>Program and data are separate.</strong>&nbsp;The program is a binary you downloaded or a Python package in its own environment. Your data lives in a workspace folder,&nbsp;<code>~/Azimut</code>&nbsp;by default, with one directory per investigation. Upgrading or uninstalling Azimut never touches it.</p>
+
+<p class="has-text-align-justify"><strong>There is no desktop application.</strong>&nbsp;No window, no system tray, no installer wizard. Azimut prints a URL and opens your browser at it. Closing the terminal or console window stops the app.</p>
+
+<p><strong>Pick your path:</strong></p>
+
+<figure class="wp-block-table"><table class="has-fixed-layout"><thead><tr><th class="has-text-align-left" data-align="left">Path</th><th class="has-text-align-left" data-align="left">Best for</th><th class="has-text-align-left" data-align="left">Needs</th></tr></thead><tbody><tr><td>Ready-to-run binary</td><td>Most people. Nothing to set up, ffmpeg included.</td><td>Nothing</td></tr><tr><td><code>pipx install azimut</code></td><td>You already use Python, or want&nbsp;<code>pipx upgrade</code>.</td><td>Python 3.11+</td></tr><tr><td>From source</td><td>Contributing, or running unreleased code.</td><td>Python 3.11+, Node.js 20+</td></tr></tbody></table></figure>
+
+<h3 id="path-a-the-ready-to-run-binary-recommended" class="wp-block-heading">Path A: the ready-to-run binary (recommended)</h3>
+
+<p class="has-text-align-justify">Every release attaches a self-contained binary per operating system. Download the one for your platform from the&nbsp;<a href="https://github.com/OsintMeThat/azimut/releases"><strong>Releases page</strong></a>; the asset names stay the same from release to release.</p>
+
+<figure class="wp-block-table"><table class="has-fixed-layout"><thead><tr><th class="has-text-align-left" data-align="left">OS</th><th class="has-text-align-left" data-align="left">Asset</th></tr></thead><tbody><tr><td>Windows</td><td><code>azimut-windows-x86_64.exe</code></td></tr><tr><td>macOS (Apple Silicon)</td><td><code>azimut-macos-arm64</code></td></tr><tr><td>macOS (Intel, 14+)</td><td>No standalone binary. Use&nbsp;<code>pipx</code>&nbsp;or&nbsp;<code>pip</code>&nbsp;instead.</td></tr><tr><td>Linux</td><td><code>azimut-linux-x86_64</code></td></tr></tbody></table></figure>
+
+<p class="has-text-align-justify">The Linux binary is built on the current Ubuntu LTS runner, so it needs <strong>glibc 2.39 or newer</strong> (Ubuntu 24.04 and up). On Debian 12 or Ubuntu 22.04 it will not start; use <code>pipx install azimut</code> there instead.</p>
+
+<p class="has-text-align-justify">Put the file somewhere permanent: your home folder,&nbsp;<code>~/Applications</code>, a tools directory. It does not care where it lives and it writes nothing next to itself, so a read-only location is fine.</p>
+
+<h4 id="the-first-run-security-warning" class="wp-block-heading">The first-run security warning</h4>
+
+<p class="has-text-align-justify">The binaries are&nbsp;<strong>unsigned</strong>, so every OS stops you the first time you open one. This is expected, and each platform has its own way through.</p>
+
+<p class="has-text-align-justify"><strong>Windows.</strong>&nbsp;Double-click the&nbsp;<code>.exe</code>. SmartScreen shows "Windows protected your PC". Click&nbsp;<strong>More info</strong>, then&nbsp;<strong>Run anyway</strong>. Once per downloaded file.</p>
+
+<p><strong>MacOS.</strong>&nbsp;Double-clicking is refused outright. Either:</p>
+
+<ul class="wp-block-list">
+<li>right-click the file, choose&nbsp;<strong>Open</strong>, then&nbsp;<strong>Open</strong>&nbsp;again in the dialog — Gatekeeper only offers that button from the context menu for unidentified developers; or</li>
+
+<li>clear the quarantine flag once from Terminal:</li>
+</ul>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>xattr -d com.apple.quarantine ./azimut-macos-arm64</code></pre>
+
+<p><strong>Linux.</strong>&nbsp;Mark it executable, then run it:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>chmod +x azimut-linux-x86_64
+./azimut-linux-x86_64</code></pre>
+
+<h4 id="what-the-binary-includes" class="wp-block-heading">What the binary includes</h4>
+
+<p class="has-text-align-justify">The downloadable binaries bundle a static&nbsp;<strong>ffmpeg</strong>&nbsp;and&nbsp;<strong>ffprobe</strong>, refreshed on every release build. Video thumbnails, frame scans, video enhancement and downloads that merge separate audio and video streams all work with nothing else installed. The bundled ffmpeg is redistributed under its own license; see&nbsp;<a href="https://ffmpeg.org/legal.html"><em>ffmpeg.org/legal.html</em></a>.</p>
+
+<h3 id="path-b-install-with-pipx-or-pip" class="wp-block-heading">Path B: install with pipx (or pip)</h3>
+
+<p>With Python 3.11 or newer, Azimut installs from PyPI.</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>pipx install azimut   # isolated app install
+azimut                # starts on http://127.0.0.1:8477 and opens a browser tab</code></pre>
+
+<p class="has-text-align-justify"><code>pip install azimut</code>&nbsp;works too, but&nbsp;<code>pipx</code>&nbsp;is the better fit: the app gets its own environment, so Azimut's dependencies never collide with your other Python projects.</p>
+
+<p>Housekeeping:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>pipx upgrade azimut     # update to the latest release
+pipx uninstall azimut   # remove the app; your ~/Azimut data stays</code></pre>
+
+<h4 id="one-extra-step-ffmpeg" class="wp-block-heading">One extra step: ffmpeg</h4>
+
+<p class="has-text-align-justify">A&nbsp;<code>pip</code>&nbsp;or&nbsp;<code>pipx</code>&nbsp;install does&nbsp;<strong>not</strong>&nbsp;bundle ffmpeg. Put&nbsp;<code>ffmpeg</code>&nbsp;and&nbsp;<code>ffprobe</code>&nbsp;on your&nbsp;<code>PATH</code>&nbsp;if you want video thumbnails, frame scanning, video enhancement, or downloads from sites that serve audio and video as separate streams. Everything else works without it.</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code># macOS
+brew install ffmpeg
+
+# Debian / Ubuntu
+sudo apt install ffmpeg
+
+# Fedora
+sudo dnf install ffmpeg
+
+# Windows
+winget install ffmpeg</code></pre>
+
+<p class="has-text-align-justify">On Windows you can also unzip a static build from&nbsp;<a href="https://ffmpeg.org/download.html">ffmpeg.org/download.html</a>&nbsp;and add its&nbsp;<code>bin</code>&nbsp;folder to&nbsp;<code>PATH</code>.</p>
+
+<p>Verify with&nbsp;<code>ffmpeg -version</code>&nbsp;in a new terminal. If your shell finds it, Azimut will too.</p>
+
+<h3 id="path-c-install-from-source" class="wp-block-heading">Path C: install from source</h3>
+
+<p class="has-text-align-justify">You need&nbsp;<strong>Python 3.11+</strong>&nbsp;and&nbsp;<strong>Node.js 20+</strong>. The Svelte frontend is compiled into the Python package, so the frontend build is not optional: skip it and you get a server with no interface.</p>
+
+<p><strong>macOS and Linux:</strong></p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>git clone https://github.com/OsintMeThat/azimut &amp;&amp; cd azimut
+python3 -m venv .venv &amp;&amp; .venv/bin/pip install -e &#34;.&#91;dev]&#34;
+cd frontend &amp;&amp; npm ci &amp;&amp; npm run build &amp;&amp; cd ..
+.venv/bin/azimut</code></pre>
+
+<p><strong>Windows PowerShell:</strong></p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>git clone https://github.com/OsintMeThat/azimut
+Set-Location azimut
+py -3 -m venv .venv
+.venv\Scripts\python -m pip install -e &#34;.&#91;dev]&#34;
+Set-Location frontend
+npm ci
+npm run build
+Set-Location ..
+.venv\Scripts\azimut.exe</code></pre>
+
+<h4 id="rebuilding-as-you-work" class="wp-block-heading">Rebuilding as you work</h4>
+
+<p class="has-text-align-justify">A cross-platform helper rebuilds the frontend, stops the previous Azimut instance it started, and launches the fresh build:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>python3 scripts/relaunch.py       # macOS / Linux
+py scripts\relaunch.py            # Windows</code></pre>
+
+<p class="has-text-align-justify">It never kills unrelated processes by name. Add&nbsp;<code>--no-browser</code>&nbsp;to keep it from opening a new tab.</p>
+
+<h4 id="frontend-development-with-hot-reload" class="wp-block-heading">Frontend development with hot reload</h4>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>.venv/bin/azimut --no-browser &amp;     # backend on :8477
+cd frontend &amp;&amp; npm run dev          # UI on :5173, API proxied</code></pre>
+
+<h4 id="the-checks-ci-runs" class="wp-block-heading">The checks CI runs</h4>
+
+<p>Before opening a pull request, run what the pipeline runs:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>uv run ruff check src tests     # lint
+uv run mypy                     # type-check the backend
+cd frontend &amp;&amp; npm run check    # svelte-check, blocks on errors</code></pre>
+
+<p>Every feature is expected to land with tests, so run the suite too.</p>
+
+<h3 id="first-launch" class="wp-block-heading">- First launch -</h3>
+
+<p>However you installed it, starting Azimut prints two lines and opens a tab:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>Azimut &lt;version&gt; · http://127.0.0.1:8477 (local only)
+Runs in your browser tab. Close this window to stop Azimut.</code></pre>
+
+<p class="has-text-align-justify">The tab opens once the server is actually accepting connections, so you never land on a "can't connect" page. </p>
+
+<p class="has-text-align-justify">If your default browser stays shut, paste&nbsp; <code>http://127.0.0.1:8477</code>&nbsp;into Firefox or Chrome yourself.</p>
+
+<h4 id="command-line-options" class="wp-block-heading">Command-line options</h4>
+
+<figure class="wp-block-table"><table class="has-fixed-layout"><thead><tr><th class="has-text-align-left" data-align="left">Option</th><th class="has-text-align-left" data-align="left">Effect</th></tr></thead><tbody><tr><td><code>--port N</code></td><td>Serve on a different port. Default is&nbsp;<code>8477</code>.</td></tr><tr><td><code>--no-browser</code></td><td>Start the server without opening a tab.</td></tr><tr><td><code>--version</code></td><td>Print the version and exit.</td></tr></tbody></table></figure>
+
+<p class="has-text-align-justify">There is no&nbsp;<code>--host</code>. Azimut binds to&nbsp;<code>127.0.0.1</code>&nbsp;and refuses to listen anywhere else, by design rather than by omission.</p>
+
+<h3 id="your-workspace-folder" class="wp-block-heading">Your workspace folder</h3>
+
+<p>On first launch Azimut creates&nbsp;<code>~/Azimut</code>:</p>
+
+<ul class="wp-block-list">
+<li><strong>Cases sit directly under it.</strong>&nbsp;Open the folder in your file manager and you see your investigations, not the app's machinery.</li>
+
+<li><strong>The machinery lives in the hidden&nbsp;<code>~/Azimut/.azimut/</code>&nbsp;directory:</strong>&nbsp;scratch sessions, exported bundles, app settings, runtime tools and tile caches.</li>
+</ul>
+
+<p class="has-text-align-justify">Inside a case, Azimut owns only the&nbsp;<code>azimut/</code>&nbsp;subdirectory, where the manifest, notes, media, proofs, exports and the case database live. A&nbsp;<code>README.txt</code>&nbsp;states that boundary. Anything else you put at the case root is yours, is left untouched, and travels with the case when you export a bundle.</p>
+
+<p class="has-text-align-justify">The path to your workspace is remembered in a one-line pointer file, kept in the platform's own configuration location so a read-only install directory is never a problem:</p>
+
+<figure class="wp-block-table"><table class="has-fixed-layout"><thead><tr><th class="has-text-align-left" data-align="left">OS</th><th class="has-text-align-left" data-align="left">Pointer file</th></tr></thead><tbody><tr><td>Windows</td><td><code>%APPDATA%\Azimut\location</code></td></tr><tr><td>macOS</td><td><code>~/Library/Application Support/Azimut/location</code></td></tr><tr><td>Linux</td><td><code>$XDG_CONFIG_HOME/azimut/location</code>, or&nbsp;<code>~/.config/azimut/location</code></td></tr></tbody></table></figure>
+
+<p class="has-text-align-justify">Losing that file costs an address, never data: Azimut falls back to&nbsp;<code>~/Azimut</code>, and pointing it back at your real workspace takes one field in Settings.</p>
+
+<h4 id="one-shot-or-in-a-case" class="wp-block-heading">One-shot or in a case</h4>
+
+<p class="has-text-align-justify">Every tool works two ways. Open one with no case and you get a scratch session, useful in about thirty seconds and stored under&nbsp;<code>.azimut/</code>, promotable to a real case later. Open a case first and the same tool files its output as evidence in that investigation. Nothing forces you to create a case just to try something.</p>
+
+<h3 id="worth-setting-up-on-day-one" class="wp-block-heading">Worth setting up on day one</h3>
+
+<p class="has-text-align-justify"><strong>General</strong>: coordinate format and units.</p>
+
+<p><strong>Publishing</strong>: thread defaults and the attribution signature.</p>
+
+<p><strong>Templates</strong>: reusable composer templates and post targets.</p>
+
+<p class="has-text-align-justify"><strong>Imagery</strong>: the basemap, with optional provider keys. A <strong>NASA FIRMS</strong> MAP_KEY also lives here: it is what turns on fire detections on the map and in the extension. Ask for one on the FIRMS page linked in Settings; it arrives by email.</p>
+
+<p class="has-text-align-justify"><strong>Storage</strong>: where the workspace lives and where exports land.</p>
+
+<h4 id="about-the-update-check" class="wp-block-heading">About the update check</h4>
+
+<p class="has-text-align-justify">Azimut asks GitHub for the latest release when the page loads and links the download when a newer one exists. This is the single exception to "nothing reaches the network unless your action needs it", and it exists so people running a downloaded binary hear about fixes. It is read-only, it fails silently offline, and&nbsp;<strong>System</strong>&nbsp;turns it off.&nbsp;<strong>Check for updates</strong>&nbsp;on the same tab runs it on demand.</p>
+
+<h3 id="optional-the-capture-extension" class="wp-block-heading">Optional: the capture extension (recommended)</h3>
+
+<p class="has-text-align-justify">A<strong> browser extension</strong> files map captures straight into a case from sites Azimut does not host: Google Maps and Earth, Bing, Yandex, OSM, Apple Maps, Zoom Earth, Copernicus Browser and Satellites.pro. One screenshot per click, with the coordinates parsed from the URL and the site's attribution kept.</p>
+
+<p>Since 0.3.0 it also draws Azimut's own tools over a 2D map on those sites: measure, the case's saved points, sun and moon, a search grid that opens in the app afterwards, reference windows holding the case's own images and videos, and NASA FIRMS fire detections. The scale is measured off the map rather than assumed, so a tool switches itself off, and says why, on a view it cannot compute on.</p>
+
+<p>The two browser families install it differently, because they disagree about what a permanent extension is.</p>
+
+<p><strong>1.</strong> <strong>Chrome, Edge, Brave</strong></p>
+
+<p class="has-text-align-justify">In Azimut, open <strong>Settings → Capture extension</strong> and press <strong>Install</strong>. The app writes the extension into a folder it owns and shows you the path — copy it.</p>
+
+<p class="has-text-align-justify">Open <code>chrome://extensions</code>, turn on <strong>Developer mode</strong> (top right), click <strong>Load unpacked</strong>, and paste the path into the picker (<code>Ctrl+L</code> on Linux, <code>Cmd+Shift+G</code> on macOS, the filename box on Windows). Leave the folder where it is: the browser loads it from there on every start.</p>
+
+<p class="has-text-align-justify">Then paste the pairing token from Settings into the extension's options, and capture something to check the round trip.</p>
+
+<p class="has-text-align-justify">Because the app owns that folder, later updates are one button: <strong>Settings → Capture extension → Update</strong> rewrites the files and the extension restarts itself. Your pairing survives. Settings still offers a plain <strong>.zip</strong> if you would rather place the files yourself, it works the same, minus the update button.</p>
+
+<p><strong>2. Firefox</strong></p>
+
+<p class="has-text-align-justify">Firefox refuses an unsigned extension and drops an unpacked one when it closes, so <code>about:debugging</code> is a dead end for daily use. It gets a signed package instead.</p>
+
+<p class="has-text-align-justify">Download the <code>.xpi</code> linked from <strong>Settings → Capture extension</strong> — the app links the exact file, which rides on the release that last changed the extension rather than on the newest one. Then open <code>about:addons</code>, use the gear menu → <strong>Install Add-on From File</strong>, and pick it. Paste the pairing token as above.</p>
+
+<p class="has-text-align-justify">It survives restarts and it updates itself: a signed package is sealed, so the Update button does not apply and Firefox reads Azimut's own update manifest about once a day. You can force it from <code>about:addons</code> → <strong>Check for Updates</strong>.</p>
+
+<p class="has-text-align-justify">The file is signed by Mozilla but listed nowhere, signing and distribution are separate, so the add-on is validated and installable without being published on addons.mozilla.org.</p>
+
+<h3 id="staying-up-to-date" class="wp-block-heading">Staying up to date</h3>
+
+<p class="has-text-align-justify"><strong>Binary.</strong>&nbsp;Download the new asset and replace the old file.&nbsp;<code>~/Azimut</code>&nbsp;is untouched, so every case reopens as it was. You clear the OS warning once more for the new file.</p>
+
+<p><strong>pipx / pip.</strong>&nbsp;<code>pipx upgrade azimut</code>, or&nbsp;<code>pip install --upgrade azimut</code>.</p>
+
+<p class="has-text-align-justify"><strong>Source.</strong>&nbsp;<code>git pull</code>, reinstall dependencies if&nbsp;<code>pyproject.toml</code>&nbsp;changed, then rebuild the frontend with&nbsp;<code>npm run build</code>. The relaunch helper does the build and restart in one step.</p>
+
+<p class="has-text-align-justify"><strong>Scrapers, independently of the app.</strong>&nbsp;<strong>Settings → System → Downloaders</strong>&nbsp;updates yt-dlp and gallery-dl. If a download suddenly fails on a site that used to work, try this before anything else.</p>
+
+<p class="has-text-align-justify">A note on schema: a case folder records the schema it was written with, and a case from a newer Azimut asks you to update rather than opening half-read. Older cases migrate forward automatically on open, with a backup retained.</p>
+
+<h3 id="moving-the-workspace" class="wp-block-heading">Moving the workspace</h3>
+
+<p>Two mechanisms, for two different situations.</p>
+
+<p class="has-text-align-justify"><strong>From the app</strong>, when you are relocating your data for good:&nbsp;<strong>Settings → Storage</strong>, described above. Use it for a move to an external drive or a bigger disk, and let Azimut verify the copy file by file.</p>
+
+<p><strong>With an environment variable</strong>, when you want a portable or temporary workspace:</p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background" style="border-style:none;border-width:0px"><code>AZIMUT_HOME=/media/usb/azimut-work azimut</code></pre>
+
+<p class="has-text-align-justify"><code>AZIMUT_HOME</code>&nbsp;wins over everything, on every launch, and creates the folder if it is missing. Because you give it fresh each time, it is the right tool for a workspace on removable media, and Settings hides the folder picker while it is set: the variable decides, not the UI.</p>
+
+<p class="has-text-align-justify">One deliberate asymmetry: a workspace configured through the pointer and then&nbsp;<strong>missing</strong>&nbsp;stops startup with a full-screen panel instead of quietly creating an empty one. An unplugged drive must not look like a first run.</p>
+
+<h3 id="troubleshooting" class="wp-block-heading">Troubleshooting</h3>
+
+<p class="has-text-align-justify"><strong>The tab never opened.</strong>&nbsp;The server is probably fine. Read the terminal for the URL and open it by hand.&nbsp;<code>--no-browser</code>&nbsp;suppresses the tab on purpose, so check it isn't left over in a script.</p>
+
+<p class="has-text-align-justify"><strong>Something else is on port 8477.</strong>&nbsp;Start elsewhere:&nbsp;<code>azimut --port 8600</code>. The port is only how your browser reaches the local server, so any free high port works.</p>
+
+<p class="has-text-align-justify"><strong>"Held by another Azimut."</strong>&nbsp;One Azimut per workspace, enforced by a lock the kernel releases on exit, with a heartbeat so a folder shared between machines can tell a live holder from a crashed one. The panel names the machine and port holding it and offers&nbsp;<strong>Reload</strong>; switch to that tab instead of starting over.&nbsp;<strong>Take it anyway</strong>&nbsp;exists for a lock that outlived its process, and warns you once before you use it.</p>
+
+<p class="has-text-align-justify"><strong>"The workspace is gone."</strong>&nbsp;The folder the pointer names isn't there: renamed, deleted, or on a drive that isn't plugged in. Nothing has been deleted or recreated. Plug the drive back in and reload, or point Azimut at the real folder from the panel's own picker.</p>
+
+<p class="has-text-align-justify"><strong>No video thumbnails, no frame scan, no video enhancement.</strong>&nbsp;ffmpeg is missing. This only happens on a&nbsp;<code>pip</code>&nbsp;or&nbsp;<code>pipx</code>&nbsp;install: install ffmpeg, restart Azimut. The downloadable binaries bundle it.</p>
+
+<p class="has-text-align-justify"><strong>A download asks me to log in.</strong>&nbsp;Public media is fetched without cookies. A login-walled post prompts once for a browser session or an exported&nbsp;<code>cookies.txt</code>. That file is a live credential, which is why it is deliberately excluded from the settings backup.</p>
+
+<p class="has-text-align-justify"><strong>A download that used to work now fails.</strong>&nbsp;Update the scrapers:&nbsp;<strong>Settings → System → Downloaders</strong>.</p>
+
+<p class="has-text-align-justify"><strong>A case looks broken.</strong>&nbsp;Run the&nbsp;<strong>Case Doctor</strong>. It checks that the case's database and media records still match its files without writing anything, then offers each repair explicitly, and states up front what a database rebuild cannot recover. It also handles files you dropped into&nbsp;<code>media/</code>&nbsp;by hand.</p>
+
+<p class="has-text-align-justify"><strong>I made a folder in the workspace from my file manager.</strong>&nbsp;One click adopts it as a case, where it is, without reading or moving what it holds. A folder whose case manifest was lost is recovered instead, then handed to the Doctor.</p>
+
+<p class="has-text-align-justify"><strong>I deleted something I needed.</strong>&nbsp;Deleted artifacts wait in the case's Trash until you restore them or delete them permanently.</p>
+
+<p class="has-text-align-justify"><strong>macOS still refuses the binary after right-click → Open.</strong>&nbsp;Clear the quarantine attribute:&nbsp;<code>xattr -d com.apple.quarantine ./azimut-macos-arm64</code>.</p>
+
+<p><strong>Linux says "permission denied".</strong>&nbsp;<code>chmod +x azimut-linux-x86_64</code>.</p>
+
+<h3 id="uninstalling" class="wp-block-heading">Uninstalling</h3>
+
+<p><strong>The program:</strong></p>
+
+<ul class="wp-block-list">
+<li>Binary: delete the file.</li>
+
+<li>pipx:&nbsp;<code>pipx uninstall azimut</code>.</li>
+
+<li>pip:&nbsp;<code>pip uninstall azimut</code>.</li>
+
+<li>Source: delete the clone.</li>
+</ul>
+
+<p class="has-text-align-justify"><strong>Your data:</strong>&nbsp;<code>~/Azimut</code>&nbsp;survives all of the above by design. Delete it by hand if you want the cases gone too. Beyond that there is only the small pointer file listed earlier.</p>
+
+<h3 id="what-you-can-count-on" class="wp-block-heading">What you can count on</h3>
+
+<p>The guarantees are short enough to state in full, and they hold in every version:</p>
+
+<ol class="wp-block-list">
+<li><strong>Local-first.</strong>&nbsp;No account, telemetry or upload. Network access follows an action that needs the network, with the opt-out startup release check as the single exception.</li>
+
+<li><strong>Portable cases.</strong>&nbsp;Files hold media, notes and proofs; a per-case SQLite database holds the graph. A closed case folder is complete and can be copied as-is, and a bundle export carries the analyst's half of the folder along with Azimut's, under a SHA-256 manifest, optionally password-protected.</li>
+
+<li><strong>Focused tools.</strong>&nbsp;One tab does one task, and works in a scratch case you can promote.</li>
+
+<li><strong>Orchestration.</strong>&nbsp;Specialized services stay external; selected results enter the case with provenance.</li>
+
+<li><strong>Analyst control.</strong>&nbsp;Tools may suggest entities or links; only your action confirms them.</li>
+
+<li><strong>Auditable output.</strong>&nbsp;Artifacts record how they were produced and label what is only a hint.</li>
+
+<li><strong>Free core.</strong>&nbsp;Local computation and keyless services cover the core workflows. Your own keys add optional providers.</li>
+
+<li><strong>Localhost only, single user.</strong>&nbsp;The server binds to&nbsp;<code>127.0.0.1</code>&nbsp;behind a Host and Origin guard, secrets are written with restrictive permissions, and imports validate what they extract.</li>
+</ol>
+
+<p class="has-text-align-justify">Source, releases, roadmap and issue tracker:&nbsp;<a href="https://github.com/OsintMeThat/azimut">github.com/OsintMeThat/azimut</a>. The full product spec lives in&nbsp;<code>docs/SPEC.md</code>, and it is the authority on what is shipped and what is next.</p>
+</div></article>
+</main>
+<aside class="sidebar">
+<section>
+<div class="why-head"><div><p class="riddle">Riddle me this, OSINT me that, who’s afraid of the cold, hard fact?</p>
+<h2>Why this platform?</h2></div><img src="/theme/logo.png" alt="" width="46" height="46"></div>
+<p>In a world of fragmented information and digital noise, clarity is the ultimate tool. I created <strong>OsintMeThat</strong> to bridge the gap between raw data and actionable understanding. Driven by a passion for geography and mapping, I use open-source intelligence to verify facts, track events, and provide an unbiased view of global conflicts. This platform is more than just a blog—it is a commitment to evidence, transparency, and the belief that the truth is always out there, waiting to be mapped.</p>
+</section>
+<section class="contact-box">
+<h2>Contact us</h2>
+<p>OsintMeThat is an open project, and we believe that collective intelligence is the best weapon against disinformation. Whether you are a geolocation expert, a data analyst, or a geopolitical enthusiast, we invite you to contribute.</p>
+<p><strong>Please feel free to reach out if you have any tips, information to share, or new ideas to suggest.</strong></p>
+<a class="button" href="/about-contact/">Contact us</a>
+</section>
+<section>
+<h2>Let’s connect</h2>
+<ul class="connect">
+<li><a href="https://x.com/OsintMeThat" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2.3h3.3l-7.2 8.2 8.5 11.2h-6.6l-5.2-6.8-6 6.8H1.7l7.7-8.8L1.3 2.3H8l4.7 6.2 5.5-6.2Zm-1.1 17.5h1.8L7 4.2H5Z"/></svg>@OsintMeThat</a></li>
+<li><a href="https://github.com/OsintMeThat" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.7 4.8 18.7 5.1 18.7 5.1c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg>OsintMeThat</a></li>
+<li><a href="mailto:osintmethat@proton.me?subject=Hello"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7"/></svg>osintmethat@proton.me</a></li>
+</ul>
+</section>
+<section class="latest-box" data-latest hidden>
+<h2>Latest articles</h2>
+<ol class="latest"></ol>
+</section>
+</aside>
+</div>
+<footer class="sitefooter"><div class="wrap">
+<ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/deep-dives/">Deep Dives</a></li><li><a href="/about-contact/">About / Contact</a></li></ul>
+<ul class="footer-social">
+<li><a href="mailto:osintmethat@proton.me?subject=Hello" aria-label="E-mail"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7"/></svg></a></li>
+<li><a href="https://x.com/OsintMeThat" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2.3h3.3l-7.2 8.2 8.5 11.2h-6.6l-5.2-6.8-6 6.8H1.7l7.7-8.8L1.3 2.3H8l4.7 6.2 5.5-6.2Zm-1.1 17.5h1.8L7 4.2H5Z"/></svg></a></li>
+<li><a href="https://github.com/OsintMeThat" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.7 4.8 18.7 5.1 18.7 5.1c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a></li>
+<li><a href="/feed.xml" aria-label="RSS feed"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4.5v2.8A12.7 12.7 0 0 1 16.7 20h2.8A15.5 15.5 0 0 0 4 4.5Zm0 5.6v2.8a7.1 7.1 0 0 1 7.1 7.1h2.8A9.9 9.9 0 0 0 4 10.1Zm2 6.9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg></a></li>
+</ul>
+<p class="small">© 2026 OSINT Me That</p>
+</div></footer>
+</body>
+</html>

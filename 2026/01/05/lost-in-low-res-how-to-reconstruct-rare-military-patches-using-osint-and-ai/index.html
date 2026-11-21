@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com https://www.instagram.com https://www.google.com https://osintmethat.github.io; base-uri 'self'; form-action 'none'">
+<title>Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI. – OSINT Me That</title>
+<meta name="description" content="Some people wonder how to obtain patches when official info is almost impossible to find. Here’s a fun step-by-step method using OSINT with AI enhancement.">
+<link rel="canonical" href="https://osintmethat.com/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/">
+<link rel="icon" href="/theme/icon.png">
+<link rel="apple-touch-icon" href="/theme/icon.png">
+<link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
+<link rel="stylesheet" href="/theme/site.css">
+<script src="/theme/site.js" defer></script>
+<meta property="og:site_name" content="OSINT Me That">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.">
+<meta property="og:description" content="Some people wonder how to obtain patches when official info is almost impossible to find. Here’s a fun step-by-step method using OSINT with AI enhancement.">
+<meta property="og:url" content="https://osintmethat.com/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/">
+<meta property="og:image" content="https://osintmethat.com/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@OsintMeThat">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead"><div class="wrap">
+<a class="brand" href="/"><img src="/theme/logo.png" alt="" width="60" height="60"><span class="brand-name"><span>OSINT</span><span>Me That</span></span></a>
+<div class="masthead-actions"><a class="pill" href="/registration/">Join us</a><a class="pill" href="https://buymeacoffee.com/osintmethat" rel="noopener">Buy Me A Coffee</a></div>
+</div></header>
+<nav class="sitenav" aria-label="Sections"><div class="wrap"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/deep-dives/">Deep Dives</a></li><li><a href="/about-contact/">About / Contact</a></li></ul></div></nav>
+<div class="wrap layout">
+<main id="main">
+<article class="post"><header class="post-head"><a class="az-category" href="/methods-tools/">Methods &amp; Tools</a><h1>Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.</h1><p class="post-meta">Published on <time datetime="2026-01-05">5 January 2026</time></p></header><div class="post-body">
+<figure class="wp-block-image size-full"><img src="/wp-content/uploads/2026/01/capture-decran-2026-01-12-131600.png" alt="" class="wp-image-250" width="1119" height="397" loading="lazy" decoding="async"></figure>
+
+<p class="has-medium-font-size">Some people wonder how to obtain patches when official info is almost impossible to find. Here’s a fun step-by-step method using OSINT with AI enhancement.</p>
+
+<h5 class="wp-block-heading">The Ghost Unit Challenge</h5>
+
+<p>Finding official insignia for specific military units can be a nightmare. Recently, I was tasked with finding the patch for the <strong>Venezuelan "Escuadrón de Vuelo No Tripulado 83"</strong> (part of G.A.I.V.R No. 8) for an ORBAT <em><a href="https://geoconfirmed.org/orbat/ven">GeoConfirmed</a></em> project.</p>
+
+<p>The problem? No official website, no high-res press kits, and zero digital footprint. Here is how I recovered it.</p>
+
+<h5 class="wp-block-heading has-medium-font-size">Step 1 - Digging into SOCMINT</h5>
+
+<div class="wp-block-columns">
+<div class="wp-block-column">
+<p>When traditional search engines fail, Instagram is often your best friend. After identifying their <a href="https://www.instagram.com/gaivire_8/">official account</a>, I scrolled back through months of posts.</p>
+
+<ul class="wp-block-list">
+<li>A discovery: A photo from a ceremony.</li>
+
+<li>One detail: A tiny, blurry patch on a commander’s flight suit. Bingo!</li>
+</ul>
+</div>
+
+<div class="wp-block-column" style="flex-basis:40%">
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/instagram_patch_ven.jpg" alt="" class="wp-image-55" style="border-width:1px;aspect-ratio:1.9106227106227107" width="1077" height="564" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9"><em>A photo from a ceremony</em> <em>celebrating the unit’s 19th anniversary</em></a></sup></figcaption></figure>
+</div>
+</div>
+
+<h5 class="wp-block-heading">Step 2 - Isolation &amp; Pre-processing</h5>
+
+<div class="wp-block-columns">
+<div class="wp-block-column">
+<p>I downloaded the high-quality version of the post and cropped the patch. It was grainy and tilted, but the core symbols were visible. </p>
+
+<p>Isolating the patch helps the AI focus its attention. By removing visual noise (uniform fabric, background people), you prevent the model from getting 'distracted' by irrelevant pixels.</p>
+</div>
+
+<div class="wp-block-column" style="flex-basis:40%">
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/military_patch_image_2.png" alt="" class="wp-image-59" style="border-width:1px;aspect-ratio:1.2683282674772036" width="643" height="507" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup> Isolation &amp; Pre-processing of the patch</sup></figcaption></figure>
+</div>
+</div>
+
+<p><strong>Tip:</strong> Even a blurry original is better than a redraw from memory.</p>
+
+<h5 class="wp-block-heading">Step 3 - AI Reconstruction with Gemini</h5>
+
+<p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">To get a clean result, I used a custom <strong>JSON-structured prompt</strong>. This tells Gemini to act as a precision restorer rather than a creative artist. You can find the prompt at the end of the article (or <a href="https://pastebin.com/1DVMhzvh">Pastbin link</a>).</p>
+
+<p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">This prompt allows for several things:</p>
+
+<ul class="wp-block-list">
+<li> enhance quality</li>
+
+<li>preserve original colors</li>
+
+<li> fix perspective</li>
+
+<li>improve sharpness</li>
+
+<li>fix letters when possible</li>
+
+<li>add a background</li>
+</ul>
+
+<p>By feeding it the reference text (<em>"ESCUADRÓN DE VUELO NO TRIPULADO N°83"</em>), I helped the AI fix the illegible letters:</p>
+
+<figure class="wp-block-image size-large"><img src="/wp-content/uploads/2026/01/text_handling.jpg" alt="" class="wp-image-102" width="1091" height="347" loading="lazy" decoding="async"></figure>
+
+<h5 class="wp-block-heading">- Result &amp; honest review -</h5>
+
+<p>The reconstruction is 95% accurate. While some organic details (like the animal's features) might need a second pass, the typography and layout are now almost perfect for ORBAT documentation. Sometimes you need 2–3 tries in a fresh chat to get a perfect match. Progress with AI is constantly advancing, so results will only get better and better in the future, notably correcting the few problems that can be encountered with text generation, which often adds imaginary letters.</p>
+
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/patch_result.jpg" alt="" class="wp-image-104" style="border-width:1px" width="1133" height="480" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup><em>The result after a single request.</em></sup></figcaption></figure>
+
+<p>With modern AI, the combo OSINT + social media digging + smart AI cleanup has become one of the most powerful ways to recover rare military patches. Go explore — the internet hides more than you think.</p>
+
+<h5 class="wp-block-heading">- <em>Extra tip</em> -</h5>
+
+<p>The sharper your original screenshot, the better the AI reconstruction will be. Here’s an example using a better quality base image and the result, the result is impressive!</p>
+
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/patch_extra_tip.jpg" alt="" class="wp-image-106" style="border-width:1px" width="1109" height="478" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup>A generation with a <a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2">sharper image</a></sup></figcaption></figure>
+
+<h5 class="wp-block-heading">The prompt (also on <a href="https://pastebin.com/1DVMhzvh">Pastbin)</a>:</h5>
+
+<p><em>Modify it as you wish!</em></p>
+
+<pre class="wp-block-code has-tertiary-background-color has-background has-small-font-size"><code>{
+  "task": "military_patch_image_enhancement",
+  "instructions": {
+    "goal": "Enhance a low-quality military patch image without modifying its design or intended text.",
+    "steps": {
+      "1_quality_enhancement": {
+        "description": "Improve sharpness, clarity, resolution, contrast, and reduce noise.",
+        "constraints": "Do not alter original colors, symbols, or design elements."
+      },
+      "2_patch_detection_and_alignment": {
+        "description": "Detect the patch in the image and straighten it.",
+        "expected_patch_shape": "Circular patch",
+        "constraints": "Only straighten; do not modify shapes or proportions."
+      },
+      "3_background_replacement": {
+        "description": "Remove the original background and place the patch on a pure white background (#FFFFFF)."
+      },
+      "4_text_handling": {
+        "description": "Identify all text on the patch and ensure correct reproduction.",
+        "rules": {
+          "preserve_readable_text": "If readable, reproduce text exactly as it appears, including casing.",
+          "replace_unreadable_text": "If unreadable or unclear, replace with provided reference text.",
+          "reference_text_input_top": "ESCUADRÓN DE VUELO NO TRIPULADO N°83",
+          "reference_text_input_bottom": "CARICARE"
+        },
+        "constraints": "Never change the meaning, spelling, or casing of the provided reference text."
+      },
+      "5_non_modification_rule": {
+        "description": "Strict rule preventing changes to original design.",
+        "rules": &#091;
+          "Do not modify artwork, symbols, insignia, patterns, or colors.",
+          "Do not add new elements.",
+          "Do not invent or reinterpret any part of the design.",
+          "Enhancement and reconstruction only — no redesign."
+        ]
+      },
+      "6_output_requirements": {
+        "description": "Output a clean, high-resolution, centered, straightened patch image.",
+        "background": "pure white",
+        "constraints": "Patch must appear exactly as original except for clarity, orientation, and text restoration using reference text if needed."
+      }
+    },
+    "inputs_expected_from_user": {
+      "image": "Low-quality image of the military patch.",
+      "shape": "Expected patch shape (e.g., round, shield-shaped, rectangular).",
+      "reference_text": "Exact patch text, used only when unreadable."
+    },
+    "output": {
+      "description": "Accurate, high-quality reproduction of the original patch on white background, with no design changes."
+    }
+  }
+}</code></pre>
+</div></article>
+</main>
+<aside class="sidebar">
+<section>
+<div class="why-head"><div><p class="riddle">Riddle me this, OSINT me that, who’s afraid of the cold, hard fact?</p>
+<h2>Why this platform?</h2></div><img src="/theme/logo.png" alt="" width="46" height="46"></div>
+<p>In a world of fragmented information and digital noise, clarity is the ultimate tool. I created <strong>OsintMeThat</strong> to bridge the gap between raw data and actionable understanding. Driven by a passion for geography and mapping, I use open-source intelligence to verify facts, track events, and provide an unbiased view of global conflicts. This platform is more than just a blog—it is a commitment to evidence, transparency, and the belief that the truth is always out there, waiting to be mapped.</p>
+</section>
+<section class="contact-box">
+<h2>Contact us</h2>
+<p>OsintMeThat is an open project, and we believe that collective intelligence is the best weapon against disinformation. Whether you are a geolocation expert, a data analyst, or a geopolitical enthusiast, we invite you to contribute.</p>
+<p><strong>Please feel free to reach out if you have any tips, information to share, or new ideas to suggest.</strong></p>
+<a class="button" href="/about-contact/">Contact us</a>
+</section>
+<section>
+<h2>Let’s connect</h2>
+<ul class="connect">
+<li><a href="https://x.com/OsintMeThat" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2.3h3.3l-7.2 8.2 8.5 11.2h-6.6l-5.2-6.8-6 6.8H1.7l7.7-8.8L1.3 2.3H8l4.7 6.2 5.5-6.2Zm-1.1 17.5h1.8L7 4.2H5Z"/></svg>@OsintMeThat</a></li>
+<li><a href="https://github.com/OsintMeThat" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.7 4.8 18.7 5.1 18.7 5.1c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg>OsintMeThat</a></li>
+<li><a href="mailto:osintmethat@proton.me?subject=Hello"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7"/></svg>osintmethat@proton.me</a></li>
+</ul>
+</section>
+<section class="latest-box" data-latest hidden>
+<h2>Latest articles</h2>
+<ol class="latest"></ol>
+</section>
+</aside>
+</div>
+<footer class="sitefooter"><div class="wrap">
+<ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/deep-dives/">Deep Dives</a></li><li><a href="/about-contact/">About / Contact</a></li></ul>
+<ul class="footer-social">
+<li><a href="mailto:osintmethat@proton.me?subject=Hello" aria-label="E-mail"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 5.5h18v13H3zM3.5 6l8.5 7 8.5-7"/></svg></a></li>
+<li><a href="https://x.com/OsintMeThat" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2.3h3.3l-7.2 8.2 8.5 11.2h-6.6l-5.2-6.8-6 6.8H1.7l7.7-8.8L1.3 2.3H8l4.7 6.2 5.5-6.2Zm-1.1 17.5h1.8L7 4.2H5Z"/></svg></a></li>
+<li><a href="https://github.com/OsintMeThat" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.7 4.8 18.7 5.1 18.7 5.1c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a></li>
+<li><a href="/feed.xml" aria-label="RSS feed"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4.5v2.8A12.7 12.7 0 0 1 16.7 20h2.8A15.5 15.5 0 0 0 4 4.5Zm0 5.6v2.8a7.1 7.1 0 0 1 7.1 7.1h2.8A9.9 9.9 0 0 0 4 10.1Zm2 6.9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg></a></li>
+</ul>
+<p class="small">© 2026 OSINT Me That</p>
+</div></footer>
+</body>
+</html>

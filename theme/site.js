@@ -78,12 +78,21 @@
         'error-callback': function () { token = ''; ready(); say('The robot check did not load. Reload the page to try again.', true); }
       });
     };
-    var script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=osmTurnstileReady';
-    script.async = true;
-    script.onerror = function () { say('The robot check did not load. Reload the page to try again.', true); };
-    document.head.appendChild(script);
-    say('');
+    var invite = form.querySelector('.field.invite');
+    // The drop point says whether it takes cases now, and whether it wants an invite code.
+    fetch(worker + '/config', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .catch(function () { return {}; })
+      .then(function (config) {
+        if (config.open === false) { say('Sending is closed for now. Ask on the Discord.', true); return; }
+        if (config.invite === true) { invite.hidden = false; invite.querySelector('input').required = true; }
+        var script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=osmTurnstileReady';
+        script.async = true;
+        script.onerror = function () { say('The robot check did not load. Reload the page to try again.', true); };
+        document.head.appendChild(script);
+        say('');
+      });
 
     function post(path, body) {
       return fetch(worker + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -122,7 +131,8 @@
       var id = '';
       post('/start', {
         name: f.author.value.trim(), email: f.email.value.trim(), title: f.title.value.trim(), note: f.note.value.trim(),
-        rights: f.made.checked, publish: f.name.checked, pictures: f.pictures.checked, size: file.size, token: token
+        rights: f.made.checked, publish: f.name.checked, pictures: f.pictures.checked, size: file.size, token: token,
+        invite: invite.hidden ? undefined : f.invite.value.trim()
       })
         .then(function (data) { id = data.id; return put(data.upload, file); })
         .then(function () { say('Checking what arrived…'); return post('/done', { id: id }); })

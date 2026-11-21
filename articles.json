@@ -1,10 +1,22 @@
 {
  "format": "azimut-site/1",
  "site": {
-  "title": "OSINT Me That",
+  "title": "MPGeoint",
   "address": "https://osintmethat.com/"
  },
  "articles": [
+  {
+   "address": "/bab-el-mandab-2026-test/",
+   "title": "The fall of the Bab al-Mandab front, Sep-Nov 2026",
+   "summary": "On 9 October 2026, Saudi Arabia's ambassador to Yemen wrote on X that Bab al-Mandab had been \"cleared of the remnants of the Houthi militia\" (his post, 9 Oct), as AFP reported the next day (AFP via…",
+   "date": "2026-11-21",
+   "date_label": "21 November 2026",
+   "category": "",
+   "author": "MPGeoint",
+   "layout": "story",
+   "image": "/bab-el-mandab-2026-test/cover.jpg",
+   "maps": []
+  },
   {
    "address": "/bab-el-mandab-2026/",
    "title": "The fall of the Bab al-Mandab front, Sep-Nov 2026",
@@ -112,5 +124,6 @@
     "address": "/2026/03/12/operation-absolute-resolve-the-night-maduro-was-taken-a-full-osint-reconstruction/"
    }
   }
- ]
+ ],
+ "pages": []
 }

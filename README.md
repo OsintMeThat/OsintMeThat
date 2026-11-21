@@ -18,6 +18,6 @@ are made with. One case, one folder, every tool, and nothing leaves your machine
 
 ## Contact
 
-[X @OsintMeThat](https://x.com/OsintMeThat) · [osintmethat@proton.me](mailto:osintmethat@proton.me) · [Buy Me A Coffee](https://buymeacoffee.com/osintmethat)
+[X @OsintMeThat](https://x.com/OsintMeThat) · [osintmethat@proton.me](mailto:osintmethat@proton.me) · [Buy me a coffee](https://ko-fi.com/osintmethat)
 
 <sub>This repository is also the website: every folder here is a page of osintmethat.com.</sub>

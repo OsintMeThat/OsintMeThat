@@ -76,6 +76,9 @@
 
   function atlas(box) {
     var map = JSON.parse(box.dataset.atlas);
+    // An author is shown when it is not the site itself, as in Azimut's own lists.
+    var named = document.querySelector('meta[property="og:site_name"]');
+    var site = named ? named.content : '';
     var img = box.querySelector('.atlas');
     var list = document.querySelector('.hero-list');
     var text = document.querySelector('.hero-text');
@@ -125,7 +128,8 @@
       g.items.slice(0, 3).forEach(function (a) {
         var li = el('li'), link = el('a', '', a.title);
         link.href = a.address;
-        li.append(link, el('small', '', (a.date_label || a.date || '') + (a.maps && a.maps.length ? ' · with a map' : '')));
+        var by = a.author && a.author !== site ? ' · ' + a.author : '';
+        li.append(link, el('small', '', (a.date_label || a.date || '') + by + (a.maps && a.maps.length ? ' · with a map' : '')));
         ul.append(li);
       });
       if (g.items.length > 3) ul.append(el('li', '', 'and ' + (g.items.length - 3) + ' more'));

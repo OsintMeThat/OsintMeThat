@@ -12,7 +12,7 @@
    "date": "2026-11-20",
    "date_label": "20 November 2026",
    "category": "Conflict Watch",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "article",
    "image": "/bab-el-mandab-2026/cover.jpg",
    "maps": [
@@ -29,7 +29,7 @@
    "date": "2026-03-12",
    "date_label": "12 March 2026",
    "category": "Investigations",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "article",
    "image": "/2026/03/12/operation-absolute-resolve-the-night-maduro-was-taken-a-full-osint-reconstruction/cover.jpg",
    "maps": [
@@ -46,7 +46,7 @@
    "date": "2026-01-12",
    "date_label": "12 January 2026",
    "category": "Investigations",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "article",
    "image": "/2026/01/12/the-shadow-of-operation-absolute-resolve/cover.jpg",
    "maps": [
@@ -63,7 +63,7 @@
    "date": "2026-01-05",
    "date_label": "5 January 2026",
    "category": "Methods & Tools",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "article",
    "image": "/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/cover.jpg",
    "maps": []
@@ -77,7 +77,7 @@
    "date": "2026-11-20",
    "date_label": "20 November 2026",
    "category": "Conflict Watch",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "map",
    "image": "/bab-el-mandab-2026-map/cover.jpg",
    "article": {
@@ -92,7 +92,7 @@
    "date": "2026-03-12",
    "date_label": "12 March 2026",
    "category": "Investigations",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "map",
    "image": "/operation-absolute-resolve-map/cover.jpg",
    "article": {
@@ -107,7 +107,7 @@
    "date": "2026-01-12",
    "date_label": "12 January 2026",
    "category": "Investigations",
-   "author": "OSINT Me That",
+   "author": "MPGeoint",
    "layout": "map",
    "image": "/shadow-of-operation-absolute-resolve-map/cover.jpg",
    "article": {

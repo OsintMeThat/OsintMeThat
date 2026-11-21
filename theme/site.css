@@ -313,6 +313,12 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .next-prev a:hover { color: var(--ink); border-color: var(--teal); }
 .next-prev .label { display: block; margin-bottom: 6px; color: var(--muted); }
 .next-prev .newer { text-align: right; }
+.next-prev .by { display: block; margin-top: 6px; font: 12.5px/1.4 var(--mono); font-weight: 400; color: var(--muted); }
+
+/* Credit lines under pictures that are not the owner's */
+.credits { margin: 18px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+.tool .credits { margin-top: 22px; color: #8b8882; }
+.credits-block h2 { font-size: 18px; }
 
 /* Footer */
 .foot { background: var(--deep); color: var(--muted-d); padding: 54px 0 30px; font-size: 15px; }

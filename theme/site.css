@@ -232,6 +232,7 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .post-body figure { margin: 1.6em 0; }
 .post-body figure img, .post-body figure video { display: block; border-radius: 6px; }
 .post-body figcaption, .post-body .wp-element-caption { margin-top: 8px; font-size: 14px; color: var(--muted); text-align: center; }
+.post-body figcaption .credit { display: block; margin-top: 3px; font-size: 12px; line-height: 1.45; color: #7a828c; }
 .post-body .aligncenter { margin-left: auto; margin-right: auto; text-align: center; }
 .post-body .aligncenter img, .post-body .aligncenter video { margin: 0 auto; }
 .post-body .wp-block-image.is-resized img { width: auto; }
@@ -315,6 +316,26 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .next-prev .newer { text-align: right; }
 .next-prev .by { display: block; margin-top: 6px; font: 12.5px/1.4 var(--mono); font-weight: 400; color: var(--muted); }
 
+/* The Contribute page */
+.contribute .steps { grid-template-columns: 1fr 1fr; margin: 0 0 22px; padding: 0; }
+.contribute .steps li { list-style: none; }
+.contribute .warn { padding: 14px 18px; border-left: 3px solid var(--pin); background: #fdf7e8; border-radius: 0 4px 4px 0; }
+.drop { display: grid; gap: 16px; margin-top: 8px; padding: 24px; border: 1px solid var(--line); border-radius: 6px; background: var(--mist); }
+.drop .field { display: grid; gap: 6px; font-size: 15px; font-weight: 600; }
+.drop .field small { font-weight: 400; color: var(--muted); }
+.drop input:not([type=checkbox]), .drop textarea { width: 100%; padding: 10px 12px; border: 1px solid #c4ccd4; border-radius: 4px; background: #fff; font: 16px/1.4 var(--sans); color: var(--ink); }
+.drop input:focus, .drop textarea:focus { outline: 2px solid var(--teal-l); outline-offset: 1px; }
+.drop .checks { margin: 0; padding: 0; border: 0; display: grid; gap: 10px; }
+.drop legend { margin-bottom: 8px; font-size: 15px; font-weight: 600; }
+.drop .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.drop .check input { margin-top: 4px; width: 17px; height: 17px; accent-color: var(--teal); flex: none; }
+.drop .turnstile { min-height: 65px; display: flex; align-items: center; padding: 0 14px; border: 1px dashed #c4ccd4; border-radius: 4px; font-size: 14px; color: var(--muted); background: #fff; }
+.drop .go { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin: 0; }
+.drop .btn[disabled] { opacity: .5; cursor: not-allowed; }
+.drop .state { font-size: 14px; color: var(--muted); }
+.drop .state.bad { color: #b3261e; }
+.drop .bar { width: 100%; height: 8px; accent-color: var(--teal); }
+
 /* Credit lines under pictures that are not the owner's */
 .credits { margin: 18px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
 .tool .credits { margin-top: 22px; color: #8b8882; }
@@ -393,7 +414,8 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .frames img { height: 200px; }
   .phead h1, .page-head h1, .post-head h1 { font-size: 34px; }
   .phead p:last-child { font-size: 18px; }
-  .steps { grid-template-columns: 1fr; }
+  .steps, .contribute .steps { grid-template-columns: 1fr; }
+  .drop { padding: 18px; }
   .cites li { grid-template-columns: 1fr; gap: 2px; }
 }
 /* A phone: the menu on two lines rather than cut, the support link left to the footer, the

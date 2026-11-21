@@ -1,7 +1,9 @@
-// Three small helps, all optional: the page reads fine without them.
+// Small helps, all optional: the pages read fine without them.
 // 1. The home's map: a pin for each article whose card (article.json) names a place, framed to fit them.
 // 2. Animated pictures (short looping videos) play only while on screen.
 // 3. An outside video, post or map loads only when its placeholder is pressed.
+// 4. A long article's contents underline the section being read.
+// 5. The Contribute page sends a case bundle to the drop point.
 (function () {
   document.addEventListener('click', function (event) {
     var link = event.target.closest && event.target.closest('a.embed-load');
@@ -46,6 +48,98 @@
 
   var box = document.querySelector('.hero-map[data-atlas]');
   if (box && window.fetch && window.Promise) atlas(box);
+
+  var drop = document.querySelector('form[data-contribute]');
+  if (drop && window.fetch && window.Promise) contribute(drop);
+
+  // The Contribute form: Turnstile, then the drop point's three steps. /start takes the fields and the
+  // token and answers a presigned upload; the file goes straight to it (XMLHttpRequest, for its progress);
+  // /done has the drop point check what arrived. Closed while the page knows no drop point or no sitekey.
+  function contribute(form) {
+    var worker = (form.dataset.worker || '').replace(/\/+$/, '');
+    var sitekey = form.dataset.sitekey || '';
+    var maxBytes = (Number(form.dataset.maxMb) || 500) * 1024 * 1024;
+    var send = form.querySelector('button[type=submit]');
+    var state = form.querySelector('.state');
+    var bar = form.querySelector('progress.bar');
+    var slot = form.querySelector('[data-turnstile]');
+    var token = '';
+    var widget = null;
+    if (!worker || !sitekey) return;
+    function say(words, bad) { state.textContent = words; state.classList.toggle('bad', !!bad); }
+    function ready() { send.disabled = !token; }
+
+    window.osmTurnstileReady = function () {
+      slot.textContent = '';
+      widget = window.turnstile.render(slot, {
+        sitekey: sitekey,
+        callback: function (t) { token = t; ready(); },
+        'expired-callback': function () { token = ''; ready(); },
+        'error-callback': function () { token = ''; ready(); say('The robot check did not load. Reload the page to try again.', true); }
+      });
+    };
+    var script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=osmTurnstileReady';
+    script.async = true;
+    script.onerror = function () { say('The robot check did not load. Reload the page to try again.', true); };
+    document.head.appendChild(script);
+    say('');
+
+    function post(path, body) {
+      return fetch(worker + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            if (!r.ok) throw new Error(data.error || 'The drop point refused the case (' + r.status + ').');
+            return data;
+          });
+        });
+    }
+
+    function put(url, file) {
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', url);
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) { bar.value = Math.round(e.loaded / e.total * 100); say('Sending… ' + bar.value + ' %'); }
+        };
+        xhr.onload = function () { xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('The upload stopped (' + xhr.status + '). Try again.')); };
+        xhr.onerror = function () { reject(new Error('The upload stopped: check your connection and try again.')); };
+        xhr.send(file);
+      });
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var f = form.elements;
+      var file = f.bundle.files[0];
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      if (/\.azimut\.enc$/i.test(file.name)) { say('Send the bundle unsealed: export the case again without a password.', true); return; }
+      if (!/\.azimut\.zip$/i.test(file.name)) { say('Choose the case bundle Azimut exports, a file ending in .azimut.zip.', true); return; }
+      if (file.size > maxBytes) { say('This bundle is over ' + (maxBytes / 1048576) + ' MB. Leave out what the article does not use and export again.', true); return; }
+      send.disabled = true;
+      bar.hidden = false; bar.value = 0;
+      say('Checking…');
+      var id = '';
+      post('/start', {
+        name: f.author.value.trim(), email: f.email.value.trim(), title: f.title.value.trim(), note: f.note.value.trim(),
+        rights: f.made.checked, publish: f.name.checked, pictures: f.pictures.checked, size: file.size, token: token
+      })
+        .then(function (data) { id = data.id; return put(data.upload, file); })
+        .then(function () { say('Checking what arrived…'); return post('/done', { id: id }); })
+        .then(function () {
+          form.reset(); bar.hidden = true;
+          form.classList.add('sent');
+          say('Received. I will write to you once I have read it.');
+        })
+        .catch(function (err) {
+          bar.hidden = true;
+          say(err.message, true);
+          token = '';
+          if (widget !== null && window.turnstile) window.turnstile.reset(widget);
+          ready();
+        });
+    });
+  }
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);

@@ -10,8 +10,8 @@
 <link rel="icon" href="/theme/icon.png">
 <link rel="apple-touch-icon" href="/theme/icon.png">
 <link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
-<link rel="stylesheet" href="/theme/site.css?v=ed8d77063e">
-<script src="/theme/site.js?v=ed8d77063e" defer></script>
+<link rel="stylesheet" href="/theme/site.css?v=c1635454ab">
+<script src="/theme/site.js?v=c1635454ab" defer></script>
 <meta property="og:site_name" content="OSINT Me That">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.">
@@ -23,25 +23,42 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="top"><div class="wrap">
-<a class="brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a>
-<nav class="nav" aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li><a class="azlink" href="/#azimut"><svg class="azmark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li><li><a href="/about-contact/">About</a></li></ul></nav>
-<a class="support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a>
-</div></header>
+<style>
+@font-face{font-family:'OSM Bar Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(/theme/fonts/instrument-sans-normal-latin.woff2) format('woff2')}
+.osm-bar{display:block;background:#0c1a2c;color:#e9eef4;border-bottom:1px solid #24405f;font:400 15px/1.4 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal}
+.osm-bar *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit}
+.osm-bar .osm-wrap{display:flex;align-items:center;gap:36px;max-width:1240px;min-height:68px;margin:0 auto;padding:0 32px}
+.osm-bar a{color:inherit;text-decoration:none;background:none}
+.osm-bar .osm-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:650;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
+.osm-bar .osm-brand img{display:block;width:34px;height:34px;max-width:none;border:0;border-radius:0;box-shadow:none}
+.osm-bar nav{flex:1;min-width:0}
+.osm-bar ul{display:flex;gap:26px;list-style:none}
+.osm-bar li{list-style:none}
+.osm-bar li::before,.osm-bar li::marker{content:none}
+.osm-bar nav a{display:block;padding:22px 0 20px;border-bottom:2px solid transparent;color:#93a6bb;white-space:nowrap}
+.osm-bar nav a:hover,.osm-bar nav a[aria-current]{color:#fff;border-color:#3fb1c2}
+.osm-bar .osm-az{color:#e9eef4}
+.osm-bar .osm-mark{display:inline-block;width:9px;height:14px;margin-right:7px;vertical-align:-1px}
+.osm-bar .osm-support{padding:8px 15px;border-radius:4px;background:#f2b33d;color:#17130b;font-size:14.5px;font-weight:650;white-space:nowrap}
+.osm-bar .osm-support:hover{background:#f6c561;color:#17130b}
+@media (max-width:1100px){.osm-bar nav{overflow-x:auto;scrollbar-width:none}}
+@media (max-width:900px){.osm-bar .osm-wrap{flex-wrap:wrap;gap:0 16px;padding-top:12px}.osm-bar nav{order:3;flex-basis:100%}.osm-bar nav a{padding:12px 0 10px}.osm-bar .osm-support{margin-left:auto}}
+@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{flex-wrap:wrap;gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar .osm-support{padding:7px 13px}.osm-bar .osm-support span{display:none}}
+</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/" aria-current="page">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li><li><a href="/about-contact/">About</a></li></ul></nav><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></header>
 <main id="main">
-<div class="wrap read">
-<article class="post"><header class="post-head"><a class="az-category" href="/methods-tools/">Methods &amp; Tools</a><h1>Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.</h1><p class="post-meta">Published on <time datetime="2026-01-05">5 January 2026</time></p></header><div class="post-body">
+<div class="wrap article">
+<article class="post"><header class="post-head"><p class="kick"><a class="cat" href="/methods-tools/">Methods &amp; Tools</a></p><h1>Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.</h1><div class="byline"><a class="who" href="https://x.com/LoLManya/" rel="noopener"><img src="/theme/author.png" alt="" width="40" height="40">MPGeoint</a><p class="post-meta"><time datetime="2026-01-05">5 January 2026</time><span>3 min read</span></p></div></header><div class="post-grid has-toc"><details class="toc" open><summary>In this article</summary><ol><li><a href="#the-ghost-unit-challenge">The Ghost Unit Challenge</a></li><li><a href="#step-1-digging-into-socmint">Step 1 - Digging into SOCMINT</a></li><li><a href="#step-2-isolation-pre-processing">Step 2 - Isolation &amp; Pre-processing</a></li><li><a href="#step-3-ai-reconstruction-with-gemini">Step 3 - AI Reconstruction with Gemini</a></li><li><a href="#result-honest-review">Result &amp; honest review</a></li><li><a href="#extra-tip">Extra tip</a></li><li><a href="#the-prompt-also-on-pastbin">The prompt (also on Pastbin):</a></li></ol></details><div class="post-body">
 <figure class="wp-block-image size-full"><img src="/wp-content/uploads/2026/01/capture-decran-2026-01-12-131600.png" alt="" class="wp-image-250" width="1119" height="397" loading="lazy" decoding="async"></figure>
 
 <p class="has-medium-font-size">Some people wonder how to obtain patches when official info is almost impossible to find. Here’s a fun step-by-step method using OSINT with AI enhancement.</p>
 
-<h5 class="wp-block-heading">The Ghost Unit Challenge</h5>
+<h5 id="the-ghost-unit-challenge" class="wp-block-heading">The Ghost Unit Challenge</h5>
 
 <p>Finding official insignia for specific military units can be a nightmare. Recently, I was tasked with finding the patch for the <strong>Venezuelan "Escuadrón de Vuelo No Tripulado 83"</strong> (part of G.A.I.V.R No. 8) for an ORBAT <em><a href="https://geoconfirmed.org/orbat/ven">GeoConfirmed</a></em> project.</p>
 
 <p>The problem? No official website, no high-res press kits, and zero digital footprint. Here is how I recovered it.</p>
 
-<h5 class="wp-block-heading has-medium-font-size">Step 1 - Digging into SOCMINT</h5>
+<h5 id="step-1-digging-into-socmint" class="wp-block-heading has-medium-font-size">Step 1 - Digging into SOCMINT</h5>
 
 <div class="wp-block-columns">
 <div class="wp-block-column">
@@ -59,7 +76,7 @@
 </div>
 </div>
 
-<h5 class="wp-block-heading">Step 2 - Isolation &amp; Pre-processing</h5>
+<h5 id="step-2-isolation-pre-processing" class="wp-block-heading">Step 2 - Isolation &amp; Pre-processing</h5>
 
 <div class="wp-block-columns">
 <div class="wp-block-column">
@@ -75,7 +92,7 @@
 
 <p><strong>Tip:</strong> Even a blurry original is better than a redraw from memory.</p>
 
-<h5 class="wp-block-heading">Step 3 - AI Reconstruction with Gemini</h5>
+<h5 id="step-3-ai-reconstruction-with-gemini" class="wp-block-heading">Step 3 - AI Reconstruction with Gemini</h5>
 
 <p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">To get a clean result, I used a custom <strong>JSON-structured prompt</strong>. This tells Gemini to act as a precision restorer rather than a creative artist. You can find the prompt at the end of the article (or <a href="https://pastebin.com/1DVMhzvh">Pastbin link</a>).</p>
 
@@ -99,7 +116,7 @@
 
 <figure class="wp-block-image size-large"><img src="/wp-content/uploads/2026/01/text_handling.jpg" alt="" class="wp-image-102" width="1091" height="347" loading="lazy" decoding="async"></figure>
 
-<h5 class="wp-block-heading">- Result &amp; honest review -</h5>
+<h5 id="result-honest-review" class="wp-block-heading">- Result &amp; honest review -</h5>
 
 <p>The reconstruction is 95% accurate. While some organic details (like the animal's features) might need a second pass, the typography and layout are now almost perfect for ORBAT documentation. Sometimes you need 2–3 tries in a fresh chat to get a perfect match. Progress with AI is constantly advancing, so results will only get better and better in the future, notably correcting the few problems that can be encountered with text generation, which often adds imaginary letters.</p>
 
@@ -107,13 +124,13 @@
 
 <p>With modern AI, the combo OSINT + social media digging + smart AI cleanup has become one of the most powerful ways to recover rare military patches. Go explore — the internet hides more than you think.</p>
 
-<h5 class="wp-block-heading">- <em>Extra tip</em> -</h5>
+<h5 id="extra-tip" class="wp-block-heading">- <em>Extra tip</em> -</h5>
 
 <p>The sharper your original screenshot, the better the AI reconstruction will be. Here’s an example using a better quality base image and the result, the result is impressive!</p>
 
 <figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/patch_extra_tip.jpg" alt="" class="wp-image-106" style="border-width:1px" width="1109" height="478" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup>A generation with a <a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2">sharper image</a></sup></figcaption></figure>
 
-<h5 class="wp-block-heading">The prompt (also on <a href="https://pastebin.com/1DVMhzvh">Pastbin)</a>:</h5>
+<h5 id="the-prompt-also-on-pastbin" class="wp-block-heading">The prompt (also on <a href="https://pastebin.com/1DVMhzvh">Pastbin)</a>:</h5>
 
 <p><em>Modify it as you wish!</em></p>
 
@@ -169,7 +186,7 @@
     }
   }
 }</code></pre>
-</div></article>
+</div></div><footer class="post-end"><section class="sources" id="sources"><h2>Sources</h2><p class="note">Every outside page this article links, with the Wayback Machine’s copy where one exists.</p><ol><li><a href="https://geoconfirmed.org/orbat/ven" rel="noopener">GeoConfirmed</a><span class="host">geoconfirmed.org</span><a class="arch" href="https://web.archive.org/web/20260109205149/https://geoconfirmed.org/orbat/ven" rel="noopener">Archived copy</a></li><li><a href="https://www.instagram.com/gaivire_8/" rel="noopener">official account</a><span class="host">instagram.com</span></li><li><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">A photo from a ceremony celebrating the unit’s 19th anniversary</a><span class="host">instagram.com</span><a class="arch" href="https://web.archive.org/web/20260108211923/https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">Archived copy</a></li><li><a href="https://pastebin.com/1DVMhzvh" rel="noopener">Pastbin link</a><span class="host">pastebin.com</span><a class="arch" href="https://web.archive.org/web/20260306002107/https://pastebin.com/1DVMhzvh" rel="noopener">Archived copy</a></li><li><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2" rel="noopener">sharper image</a><span class="host">instagram.com</span></li></ol></section><nav class="next-prev" aria-label="More articles"><span class="older"></span><a class="newer" href="/2026/01/12/the-shadow-of-operation-absolute-resolve/"><span class="label">Newer</span>The shadow of Operation Absolute Resolve</a></nav></footer></article>
 </div>
 </main>
 <footer class="foot"><div class="wrap">
@@ -177,7 +194,7 @@
 <div><a class="brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a>
 <p>Open-source investigations, placed on the map. No ads, no tracking cookies.</p></div>
 <div><h2>Sections</h2><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li></ul></div>
-<div><h2>Site</h2><ul><li><a href="/about-contact/">About</a></li><li><a href="/#azimut">Azimut</a></li><li><a href="/legal-notice/">Legal notice</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/feed.xml">RSS feed</a></li></ul></div>
+<div><h2>Site</h2><ul><li><a href="/about-contact/">About</a></li><li><a href="/azimut/">Azimut</a></li><li><a href="/legal-notice/">Legal notice</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/feed.xml">RSS feed</a></li></ul></div>
 <div><h2>Contact</h2><ul><li><a href="mailto:osintmethat@proton.me?subject=Hello">osintmethat@proton.me</a></li><li><a href="https://x.com/OsintMeThat" rel="noopener">X @OsintMeThat</a></li><li><a href="https://github.com/OsintMeThat" rel="noopener">GitHub</a></li><li><a href="https://ko-fi.com/osintmethat" rel="noopener">Support on Ko-fi</a></li></ul></div>
 </div>
 <p class="bottom"><span>© 2026 OSINT Me That</span><span>Published with <a href="https://github.com/OsintMeThat/azimut" rel="noopener">Azimut</a> · Hosted on GitHub Pages</span></p>

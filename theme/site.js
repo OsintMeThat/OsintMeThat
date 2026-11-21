@@ -28,6 +28,22 @@
     loops.forEach(function (v) { seen.observe(v); });
   }
 
+  // The contents beside a long article underline the section being read.
+  var toc = document.querySelector('.toc');
+  if (toc && window.matchMedia('(max-width: 1180px)').matches) toc.open = false;   // folded above the text on a narrow screen
+  if (toc && 'IntersectionObserver' in window) {
+    var links = {};
+    toc.querySelectorAll('a[href^="#"]').forEach(function (a) { links[decodeURIComponent(a.hash.slice(1))] = a; });
+    var reading = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting || !links[e.target.id]) return;
+        toc.querySelectorAll('a.on').forEach(function (a) { a.classList.remove('on'); });
+        links[e.target.id].classList.add('on');
+      });
+    }, { rootMargin: '0px 0px -70% 0px' });
+    Object.keys(links).forEach(function (id) { var h = document.getElementById(id); if (h) reading.observe(h); });
+  }
+
   var box = document.querySelector('.hero-map[data-atlas]');
   if (box && window.fetch && window.Promise) atlas(box);
 

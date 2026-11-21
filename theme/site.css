@@ -134,8 +134,19 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .lockup { display: block; width: auto; height: 32px; margin-bottom: 26px; }
 .tool h2, .tool h1 { margin: 0; font-size: 36px; line-height: 1.1; color: #fff; text-wrap: balance; }
 .azpage { padding-top: 56px; }
-.frames.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.frames.four img { height: 210px; }
+.azhero { margin: 0; }
+.azhero img { display: block; width: 100%; height: auto; border: 1px solid #2a2e34; border-radius: 6px; }
+.azsteps { padding-top: 64px; }
+.azsteps > h2 { margin: 0 0 40px; font-size: 32px; }
+.azstep { display: grid; grid-template-columns: 7fr 5fr; gap: 48px; align-items: center; padding: 36px 0; border-top: 1px solid var(--line); }
+.azstep:nth-of-type(even) { grid-template-columns: 5fr 7fr; }
+.azstep:nth-of-type(even) > figure { order: 2; }
+.azstep figure { margin: 0; }
+.azstep img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 12px 30px -18px rgba(12, 26, 44, .45); }
+.azstep .label { display: block; margin: 0 0 8px; color: var(--amber); }
+.azstep h3 { margin: 0 0 14px; font-size: 26px; }
+.azstep p { margin: 0 0 12px; color: var(--ink2); }
+.azstep .tools { margin-top: 16px; font: 12.5px/1.5 var(--mono); color: var(--muted); }
 .azbody { max-width: 860px; padding-top: 56px; padding-bottom: 72px; }
 .azbody section + section { margin-top: 48px; }
 .azbody h2 { margin: 0 0 16px; font-size: 27px; }
@@ -349,7 +360,9 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .az-list:not(.az-maps) > .az-item:first-child { display: block; }
   .az-list:not(.az-maps) > .az-item:first-child .az-cover { margin-bottom: 16px; }
   .az-maps, .toolhead, .abody { grid-template-columns: 1fr; }
-  .frames, .frames.four { grid-template-columns: 1fr 1fr; }
+  .frames { grid-template-columns: 1fr 1fr; }
+  .azstep, .azstep:nth-of-type(even) { grid-template-columns: 1fr; gap: 20px; }
+  .azstep:nth-of-type(even) > figure { order: 0; }
   .frames figure:first-child { grid-column: 1 / -1; }
   .foot .cols { grid-template-columns: 1fr 1fr; }
   .foot .cols > div:first-child { grid-column: 1 / -1; }
@@ -361,6 +374,8 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .wrap { padding: 0 18px; }
   .read, .wide { padding-top: 30px; }
   .abody, .azbody { padding-top: 40px; padding-bottom: 56px; }
+  .azsteps { padding-top: 40px; }
+  .azsteps > h2 { font-size: 26px; margin-bottom: 24px; }
   .hero-map { height: 240px; }
   .az-list { grid-template-columns: 1fr; gap: 0; }
   .az-list:not(.az-maps) > .az-item:not(:first-child) { display: grid; grid-template-columns: 112px 1fr; column-gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }

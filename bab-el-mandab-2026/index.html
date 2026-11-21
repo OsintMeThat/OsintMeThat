@@ -31,9 +31,7 @@
 @font-face{font-family:"az-head";src:url(assets/08351fbb-az-head-700-normal.woff) format("woff");font-weight:700;font-style:normal;font-display:swap}</style>
 <link rel="stylesheet" id="az-reader" href="assets/595a1465-reader.css">
 </head>
-<body><style>
-@font-face{font-family:'OSM Bar Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(/theme/fonts/instrument-sans-normal-latin.woff2) format('woff2')}
-.osm-bar{display:block;background:#0c1a2c;color:#e9eef4;border-bottom:1px solid #24405f;font:400 15px/1.4 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal}
+<body><!-- azimut:bar --><style>@font-face{font-family:'OSM Bar Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url("/theme/fonts/instrument-sans-normal-latin.woff2") format('woff2')}</style><azimut-bar><template shadowrootmode="open"><style>:host{all:initial;display:block}:where(svg:not([width])){width:1.5em}:where(svg:not([height])){height:1.5em}:where(img){max-width:100%}.osm-bar{display:block;background:#0c1a2c;color:#e9eef4;border-bottom:1px solid #24405f;font:400 15px/1.4 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal}
 .osm-bar *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit}
 .osm-bar .osm-wrap{display:flex;align-items:center;gap:36px;max-width:1240px;min-height:68px;margin:0 auto;padding:0 32px}
 .osm-bar a{color:inherit;text-decoration:none;background:none}
@@ -51,8 +49,9 @@
 .osm-bar .osm-support:hover{background:#f6c561;color:#17130b}
 @media (max-width:1100px){.osm-bar nav{overflow-x:auto;scrollbar-width:none}}
 @media (max-width:900px){.osm-bar .osm-wrap{flex-wrap:wrap;gap:0 16px;padding-top:12px}.osm-bar nav{order:3;flex-basis:100%}.osm-bar nav a{padding:12px 0 10px}.osm-bar .osm-support{margin-left:auto}}
-@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{flex-wrap:wrap;gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar .osm-support{padding:7px 13px}.osm-bar .osm-support span{display:none}}
-</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li><li><a href="/about-contact/">About</a></li></ul></nav><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></header>
+@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{flex-wrap:wrap;gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar .osm-support{padding:7px 13px}.osm-bar .osm-support span{display:none}}</style>
+<header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewbox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li><li><a href="/about-contact/">About</a></li></ul></nav><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></header>
+</template></azimut-bar><!-- /azimut:bar -->
 <header class="az-cover" data-cover="style">
 <p class="az-kicker">Article</p>
 <h1 class="az-title" dir="auto">The fall of the Bab al-Mandab front, Sep-Nov 2026</h1>

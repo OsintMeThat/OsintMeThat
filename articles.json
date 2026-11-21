@@ -20,7 +20,12 @@
      "title": "The Bab al-Mandab front on one map",
      "address": "/bab-el-mandab-2026-map/"
     }
-   ]
+   ],
+   "place": {
+    "lat": 12.725004,
+    "lon": 43.5075,
+    "name": "Bab al-Mandab, Yemen"
+   }
   },
   {
    "address": "/2026/03/12/operation-absolute-resolve-the-night-maduro-was-taken-a-full-osint-reconstruction/",
@@ -37,7 +42,12 @@
      "title": "Operation Absolute Resolve, the map",
      "address": "/operation-absolute-resolve-map/"
     }
-   ]
+   ],
+   "place": {
+    "lat": 10.443637,
+    "lon": -66.9184,
+    "name": "Caracas, Venezuela"
+   }
   },
   {
    "address": "/2026/01/12/the-shadow-of-operation-absolute-resolve/",
@@ -54,7 +64,12 @@
      "title": "The shadow of Operation Absolute Resolve, the map",
      "address": "/shadow-of-operation-absolute-resolve-map/"
     }
-   ]
+   ],
+   "place": {
+    "lat": 10.443637,
+    "lon": -66.9184,
+    "name": "Caracas, Venezuela"
+   }
   },
   {
    "address": "/2026/01/05/lost-in-low-res-how-to-reconstruct-rare-military-patches-using-osint-and-ai/",

@@ -30,9 +30,6 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .label { font: 500 11.5px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
 
 /* The header is the site bar (build.py, BAR_STYLE): its style travels with it, under .osm-bar. */
-.foot .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; color: #fff; text-decoration: none; font-weight: 650; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; }
-.foot .brand:hover { color: #fff; }
-.foot .brand img { width: 34px; height: 34px; }
 
 /* Page bodies */
 .read { max-width: 820px; padding-top: 44px; padding-bottom: 72px; }
@@ -344,16 +341,7 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .tool .credits { margin-top: 22px; color: #8b8882; }
 .credits-block h2 { font-size: 18px; }
 
-/* Footer */
-.foot { background: var(--deep); color: var(--muted-d); padding: 54px 0 30px; font-size: 15px; }
-.foot .cols { display: grid; grid-template-columns: 4fr 2fr 2fr 3fr; gap: 32px; }
-.foot p { margin: 0; max-width: 34ch; }
-.foot h2 { margin: 6px 0 14px; font: 500 11.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: #6f86a0; }
-.foot ul { list-style: none; margin: 0; padding: 0; line-height: 2.05; }
-.foot ul a { color: var(--on-d); text-decoration: none; }
-.foot ul a:hover { color: var(--teal-l); }
-.foot .bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; max-width: none; margin: 44px 0 0; padding-top: 18px; border-top: 1px solid var(--line-d); font: 12px/1.5 var(--mono); color: #6f86a0; }
-.foot .bottom a { color: inherit; }
+/* The footer is the site footer (build.py, FOOT_STYLE): its style travels with it, under .osm-foot. */
 
 /* Outside embeds wait for a press: nothing reaches YouTube, Instagram or Google before it */
 .embed-load {
@@ -394,8 +382,6 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .azstep, .azstep:nth-of-type(even) { grid-template-columns: 1fr; gap: 20px; }
   .azstep:nth-of-type(even) > figure { order: 0; }
   .frames figure:first-child { grid-column: 1 / -1; }
-  .foot .cols { grid-template-columns: 1fr 1fr; }
-  .foot .cols > div:first-child { grid-column: 1 / -1; }
   .side { position: static; }
   .post-body .wp-block-columns { flex-direction: column; gap: 0; }
 }
@@ -438,8 +424,6 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .frames figure { flex: 0 0 82%; scroll-snap-align: start; scroll-margin-left: 18px; }
   .frames img { height: 200px; }
   .press p { font-size: 17px; }
-  .foot { padding-top: 40px; }
-  .foot .cols { gap: 26px 20px; }
 }
 @media (max-width: 1180px) {
   .post-grid.has-toc { display: block; max-width: 760px; margin: 0 auto; }

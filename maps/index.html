@@ -10,8 +10,8 @@
 <link rel="icon" href="/theme/icon.png">
 <link rel="apple-touch-icon" href="/theme/icon.png">
 <link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
-<link rel="stylesheet" href="/theme/site.css?v=9a229558e8">
-<script src="/theme/site.js?v=9a229558e8" defer></script>
+<link rel="stylesheet" href="/theme/site.css?v=a95c0521ff">
+<script src="/theme/site.js?v=a95c0521ff" defer></script>
 <meta property="og:site_name" content="OSINT Me That">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Maps">
@@ -84,15 +84,38 @@
 <!-- /azimut:articles --><p class="credits">Imagery in the maps and their pictures: Esri, Vantor, Earthstar Geographics, and the GIS User Community.</p>
 </div>
 </main>
-<footer class="foot"><div class="wrap">
-<div class="cols">
-<div><a class="brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a>
+<style>
+@font-face{font-family:'OSM Bar Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(/theme/fonts/instrument-sans-normal-latin.woff2) format('woff2')}
+@font-face{font-family:'OSM Foot Mono';font-style:normal;font-weight:400;font-display:swap;src:url(/theme/fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'OSM Foot Mono';font-style:normal;font-weight:500;font-display:swap;src:url(/theme/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+.osm-foot{display:block;background:#0c1a2c;color:#93a6bb;padding:54px 0 30px;font:400 15px/1.6 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal}
+.osm-foot *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit}
+.osm-foot a{color:inherit;text-decoration:none;background:none}
+.osm-foot a:focus-visible{outline:2px solid #3fb1c2;outline-offset:3px;border-radius:3px}
+.osm-foot .osm-wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.osm-foot .osm-cols{display:grid;grid-template-columns:4fr 2fr 2fr 3fr;gap:32px}
+.osm-foot .osm-brand{display:flex;align-items:center;gap:11px;margin-bottom:14px;color:#fff;font-weight:650;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
+.osm-foot .osm-brand img{display:block;width:34px;height:34px;max-width:none;border:0;border-radius:0;box-shadow:none}
+.osm-foot p{max-width:34ch}
+.osm-foot h2{margin:6px 0 14px;font:500 11.5px/1 'OSM Foot Mono',ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase;letter-spacing:.12em;color:#6f86a0}
+.osm-foot ul{list-style:none;line-height:2.05}
+.osm-foot li{list-style:none}
+.osm-foot li::before,.osm-foot li::marker{content:none}
+.osm-foot ul a{color:#e9eef4}
+.osm-foot ul a:hover{color:#3fb1c2}
+.osm-foot .osm-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;max-width:none;margin-top:44px;padding-top:18px;border-top:1px solid #24405f;font:12px/1.5 'OSM Foot Mono',ui-monospace,Menlo,Consolas,monospace;color:#6f86a0}
+.osm-foot .osm-bottom a{text-decoration:underline}
+@media (max-width:900px){.osm-foot .osm-cols{grid-template-columns:1fr 1fr}.osm-foot .osm-cols>div:first-child{grid-column:1/-1}}
+@media (max-width:600px){.osm-foot{padding-top:40px}.osm-foot .osm-wrap{padding:0 18px}.osm-foot .osm-cols{gap:26px 20px}}
+</style><footer class="osm-foot"><div class="osm-wrap">
+<div class="osm-cols">
+<div><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a>
 <p>Open-source investigations, placed on the map. No ads, no tracking cookies.</p></div>
 <div><h2>Sections</h2><ul><li><a href="/investigations/">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li></ul></div>
 <div><h2>Site</h2><ul><li><a href="/about-contact/">About</a></li><li><a href="/azimut/">Azimut</a></li><li><a href="/legal-notice/">Legal notice</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/feed.xml">RSS feed</a></li></ul></div>
 <div><h2>Contact</h2><ul><li><a href="mailto:osintmethat@proton.me?subject=Hello">osintmethat@proton.me</a></li><li><a href="https://x.com/OsintMeThat" rel="noopener">X @OsintMeThat</a></li><li><a href="https://discord.gg/enCuR5m6SG" rel="noopener">Discord</a></li><li><a href="https://github.com/OsintMeThat" rel="noopener">GitHub</a></li><li><a href="https://ko-fi.com/osintmethat" rel="noopener">Support on Ko-fi</a></li></ul></div>
 </div>
-<p class="bottom"><span>© 2026 OSINT Me That</span><span>Published with <a href="https://github.com/OsintMeThat/azimut" rel="noopener">Azimut</a> · World map: Natural Earth · Hosted on GitHub Pages</span></p>
+<p class="osm-bottom"><span>© 2026 OSINT Me That</span><span>Published with <a href="https://github.com/OsintMeThat/azimut" rel="noopener">Azimut</a> · World map: Natural Earth · Hosted on GitHub Pages</span></p>
 </div></footer>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3d894eeb1faf4beba305dd533840f2ba"}'></script><!-- End Cloudflare Web Analytics -->
 </body>

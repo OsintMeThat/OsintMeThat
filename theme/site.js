@@ -5,6 +5,7 @@
 // 4. A long article's contents underline the section being read.
 // 5. The Contribute page sends a case bundle to the drop point.
 // 6. The lists' extras: places, a map's contents, counts, a category's atlas, About's numbers, the Azimut page.
+// 7. An older article's sources: the words citing one show its entry from the list in a card.
 (function () {
   document.addEventListener('click', function (event) {
     var link = event.target.closest && event.target.closest('a.embed-load');
@@ -54,6 +55,65 @@
   if (drop && window.fetch && window.Promise) contribute(drop);
 
   if (window.fetch && window.Promise) extras();
+
+  // Only the Sources list build.py writes (data-cards): Azimut's pages bring their own script.
+  if (document.querySelector('section.sources[data-cards]')) cards();
+
+  // A source's card. A mouse shows it 180 ms after resting on the words and hides it 250 ms after leaving them
+  // and the card, and its click still opens the original. A finger's first tap opens the card instead, which
+  // then ends on the way to the list; a tap elsewhere closes it. Keyboard focus shows it, Escape closes it.
+  function cards() {
+    var pop = el('div', 'src-card');
+    pop.hidden = true;
+    document.body.append(pop);
+    var hide, wait, openFor = null, pointer = 'mouse';
+    function kind(e) { pointer = e.pointerType || 'mouse'; }
+    addEventListener('pointerdown', kind, { capture: true, passive: true });
+    addEventListener('pointermove', kind, { capture: true, passive: true });
+
+    function show(link, withList) {
+      var entry = document.getElementById(link.dataset.card);
+      clearTimeout(hide); clearTimeout(wait);
+      if (!entry) return;
+      var words = el('div');
+      Array.prototype.forEach.call(entry.childNodes, function (n) { words.append(n.cloneNode(true)); });
+      pop.textContent = '';
+      pop.append(el('span', 'n', link.dataset.label), words);
+      if (withList) {
+        var to = el('a', 'to-list', 'Go to the list');
+        to.href = '#' + entry.id;
+        pop.append(to);
+      }
+      pop.hidden = false;
+      openFor = link;
+      var r = link.getBoundingClientRect(), w = Math.min(420, innerWidth - 24);
+      pop.style.maxWidth = w + 'px';
+      pop.style.left = Math.max(12, Math.min(scrollX + r.left - 20, scrollX + innerWidth - w - 12)) + 'px';
+      pop.style.top = (scrollY + r.bottom + 8) + 'px';
+    }
+    function close() { clearTimeout(wait); pop.hidden = true; openFor = null; }
+    function later() { clearTimeout(wait); if (pointer === 'mouse') hide = setTimeout(close, 250); }
+
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('.src-card a.to-list')) { close(); return; }
+      var link = event.target.closest('.post-body [data-card]:not(.embed-load)');
+      if (link && pointer !== 'mouse' && openFor !== link) { event.preventDefault(); show(link, true); return; }
+      if (!link && !event.target.closest('.src-card')) close();
+    });
+    document.querySelectorAll('.post-body [data-card]:not(.embed-load)').forEach(function (link) {
+      link.addEventListener('mouseenter', function () {
+        if (pointer !== 'mouse') return;
+        clearTimeout(hide); clearTimeout(wait);
+        wait = setTimeout(function () { show(link, false); }, openFor ? 0 : 180);
+      });
+      link.addEventListener('mouseleave', later);
+      link.addEventListener('focus', function () { if (pointer === 'mouse') show(link, false); });
+      link.addEventListener('blur', function () { if (!pop.matches(':hover')) later(); });
+    });
+    pop.addEventListener('mouseenter', function () { clearTimeout(hide); });
+    pop.addEventListener('mouseleave', later);
+    addEventListener('keydown', function (event) { if (event.key === 'Escape') close(); });
+  }
 
   // The Contribute form: Turnstile, then the drop point's three steps. /start takes the fields and the
   // token and answers a presigned upload; the file goes straight to it (XMLHttpRequest, for its progress);

@@ -10,8 +10,8 @@
 <link rel="icon" href="/theme/icon.png">
 <link rel="apple-touch-icon" href="/theme/icon.png">
 <link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
-<link rel="stylesheet" href="/theme/site.css?v=ea2b971e6c">
-<script src="/theme/site.js?v=ea2b971e6c" defer></script>
+<link rel="stylesheet" href="/theme/site.css?v=709fe3650c">
+<script src="/theme/site.js?v=709fe3650c" defer></script>
 <meta property="og:site_name" content="OSINT Me That">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lost in Low-Res: How to Reconstruct Rare Military Patches using OSINT and AI.">
@@ -89,7 +89,7 @@
 
 <h5 id="the-ghost-unit-challenge" class="wp-block-heading">The Ghost Unit Challenge</h5>
 
-<p>Finding official insignia for specific military units can be a nightmare. Recently, I was tasked with finding the patch for the <strong>Venezuelan "Escuadrón de Vuelo No Tripulado 83"</strong> (part of G.A.I.V.R No. 8) for an ORBAT <em><a href="https://geoconfirmed.org/orbat/ven">GeoConfirmed</a></em> project.</p>
+<p>Finding official insignia for specific military units can be a nightmare. Recently, I was tasked with finding the patch for the <strong>Venezuelan "Escuadrón de Vuelo No Tripulado 83"</strong> (part of G.A.I.V.R No. 8) for an ORBAT <em><a data-card="src-geoconfirmed-ven" data-label="Page" href="https://geoconfirmed.org/orbat/ven">GeoConfirmed</a></em> project.</p>
 
 <p>The problem? No official website, no high-res press kits, and zero digital footprint. Here is how I recovered it.</p>
 
@@ -97,7 +97,7 @@
 
 <div class="wp-block-columns">
 <div class="wp-block-column">
-<p>When traditional search engines fail, Instagram is often your best friend. After identifying their <a href="https://www.instagram.com/gaivire_8/">official account</a>, I scrolled back through months of posts.</p>
+<p>When traditional search engines fail, Instagram is often your best friend. After identifying their <a data-card="src-instagram-gaivire_8" data-label="Account on Instagram" href="https://www.instagram.com/gaivire_8/">official account</a>, I scrolled back through months of posts.</p>
 
 <ul class="wp-block-list">
 <li>A discovery: A photo from a ceremony.</li>
@@ -107,7 +107,7 @@
 </div>
 
 <div class="wp-block-column" style="flex-basis:40%">
-<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/instagram_patch_ven.jpg" alt="" class="wp-image-55" style="border-width:1px;aspect-ratio:1.9106227106227107" width="1077" height="564" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9"><em>A photo from a ceremony</em> <em>celebrating the unit’s 19th anniversary</em></a></sup></figcaption></figure>
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/instagram_patch_ven.jpg" alt="" class="wp-image-55" style="border-width:1px;aspect-ratio:1.9106227106227107" width="1077" height="564" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup><a data-card="src-instagram-DIC1c6ysX7w" data-label="Post on Instagram" href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9"><em>A photo from a ceremony</em> <em>celebrating the unit’s 19th anniversary</em></a></sup></figcaption></figure>
 </div>
 </div>
 
@@ -129,7 +129,7 @@
 
 <h5 id="step-3-ai-reconstruction-with-gemini" class="wp-block-heading">Step 3 - AI Reconstruction with Gemini</h5>
 
-<p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">To get a clean result, I used a custom <strong>JSON-structured prompt</strong>. This tells Gemini to act as a precision restorer rather than a creative artist. You can find the prompt at the end of the article (or <a href="https://pastebin.com/1DVMhzvh">Pastbin link</a>).</p>
+<p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">To get a clean result, I used a custom <strong>JSON-structured prompt</strong>. This tells Gemini to act as a precision restorer rather than a creative artist. You can find the prompt at the end of the article (or <a data-card="src-pastebin-1dvmhzvh" data-label="Page" href="https://pastebin.com/1DVMhzvh">Pastbin link</a>).</p>
 
 <p style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">This prompt allows for several things:</p>
 
@@ -163,9 +163,9 @@
 
 <p>The sharper your original screenshot, the better the AI reconstruction will be. Here’s an example using a better quality base image and the result, the result is impressive!</p>
 
-<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/patch_extra_tip.jpg" alt="" class="wp-image-106" style="border-width:1px" width="1109" height="478" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup>A generation with a <a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2">sharper image</a></sup></figcaption></figure>
+<figure class="wp-block-image aligncenter size-large has-custom-border"><img src="/wp-content/uploads/2026/01/patch_extra_tip.jpg" alt="" class="wp-image-106" style="border-width:1px" width="1109" height="478" loading="lazy" decoding="async"><figcaption class="wp-element-caption"><sup>A generation with a <a data-card="src-instagram-DIC1c6ysX7w" data-label="Post on Instagram" href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2">sharper image</a></sup></figcaption></figure>
 
-<h5 id="the-prompt-also-on-pastbin" class="wp-block-heading">The prompt (also on <a href="https://pastebin.com/1DVMhzvh">Pastbin)</a>:</h5>
+<h5 id="the-prompt-also-on-pastbin" class="wp-block-heading">The prompt (also on <a data-card="src-pastebin-1dvmhzvh" data-label="Page" href="https://pastebin.com/1DVMhzvh">Pastbin)</a>:</h5>
 
 <p><em>Modify it as you wish!</em></p>
 
@@ -221,7 +221,7 @@
     }
   }
 }</code></pre>
-</div></div><footer class="post-end"><section class="sources" id="sources"><h2>Sources</h2><p class="note">Every outside page this article links, with the Wayback Machine’s copy where one exists.</p><ol><li><a href="https://geoconfirmed.org/orbat/ven" rel="noopener">GeoConfirmed</a><span class="host">geoconfirmed.org</span><a class="arch" href="https://web.archive.org/web/20260109205149/https://geoconfirmed.org/orbat/ven" rel="noopener">Archived copy</a></li><li><a href="https://www.instagram.com/gaivire_8/" rel="noopener">official account</a><span class="host">instagram.com</span></li><li><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">A photo from a ceremony celebrating the unit’s 19th anniversary</a><span class="host">instagram.com</span><a class="arch" href="https://web.archive.org/web/20260108211923/https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">Archived copy</a></li><li><a href="https://pastebin.com/1DVMhzvh" rel="noopener">Pastbin link</a><span class="host">pastebin.com</span><a class="arch" href="https://web.archive.org/web/20260306002107/https://pastebin.com/1DVMhzvh" rel="noopener">Archived copy</a></li><li><a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=2" rel="noopener">sharper image</a><span class="host">instagram.com</span></li></ol></section><nav class="next-prev" aria-label="More articles"><span class="older"></span><a class="newer" href="/2026/01/12/the-shadow-of-operation-absolute-resolve/"><span class="label">Newer</span>The shadow of Operation Absolute Resolve<span class="by">MPGeoint</span></a></nav></footer></article>
+</div></div><footer class="post-end"><section class="sources" id="sources" data-cards><h2>Sources</h2><p class="note">The words in the text link to the original. Hover a link, or tap it, to see its card. Each source below keeps its archived copy where one exists.</p><h3>Articles and pages</h3><ul><li id="src-geoconfirmed-ven">Geoconfirmed, <a href="https://geoconfirmed.org/orbat/ven" rel="noopener">“Orbat National Bolivarian Armed Forces of Venezuela (BNAF / FANB)”</a>. <a class="arch" href="https://web.archive.org/web/20260109205149/https://geoconfirmed.org/orbat/ven" rel="noopener">Archived copy</a></li><li id="src-pastebin-1dvmhzvh">Pastebin, <a href="https://pastebin.com/1DVMhzvh" rel="noopener">“military_patch_image_enhancement”</a>. <a class="arch" href="https://web.archive.org/web/20260306002107/https://pastebin.com/1DVMhzvh" rel="noopener">Archived copy</a></li></ul><h3>Posts and footage</h3><ul><li id="src-instagram-gaivire_8">@gaivire_8 on Instagram, <a href="https://www.instagram.com/gaivire_8/" rel="noopener">account</a>.</li><li id="src-instagram-DIC1c6ysX7w">Instagram, <a href="https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">post</a>. <a class="arch" href="https://web.archive.org/web/20260108211923/https://www.instagram.com/p/DIC1c6ysX7w/?img_index=9" rel="noopener">Archived copy</a></li></ul></section><nav class="next-prev" aria-label="More articles"><span class="older"></span><a class="newer" href="/2026/01/12/the-shadow-of-operation-absolute-resolve/"><span class="label">Newer</span>The shadow of Operation Absolute Resolve<span class="by">MPGeoint</span></a></nav></footer></article>
 </div>
 </main>
 <style>

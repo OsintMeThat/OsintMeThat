@@ -1,0 +1,1992 @@
+/*
+ * Azimut reader: what an exported HTML report does when it is read. Inlined by
+ * engine/notes_html.py beside reader.css; no library, no network, nothing kept.
+ * It only adds to a page that reads whole without it. The one exception is a web
+ * folder read online, whose maps it hands to reader.live.js (`online` in reader.map.js).
+ */
+(() => {
+  'use strict';
+  const doc = document;
+  const root = doc.documentElement;
+  root.classList.add('az-js');
+  const query = (text) => (window.matchMedia ? window.matchMedia(text) : { matches: false });
+  const reduced = query('(prefers-reduced-motion: reduce)');
+  const wide = query('(min-width: 64rem)');
+  const roomy = query('(min-width: 85rem)');
+  // the story layout: each picture held still while the words after it go by
+  const story = root.dataset.web === 'story';
+  const motion = () => (reduced.matches ? 'auto' : 'smooth');
+  const all = (selector, within = doc) => [...within.querySelectorAll(selector)];
+  const words = (node) => (node ? node.textContent.replace(/\s+/g, ' ').trim() : '');
+  const quietly = (promise) => promise && promise.catch && promise.catch(() => {});
+  let made = 0;
+  const idOf = (node) => node.id || (node.id = `az-made-${(made += 1)}`);
+  const byHash = (hash) => {
+    const id = decodeURIComponent(String(hash || '').slice(1));
+    return id ? doc.getElementById(id) : null;
+  };
+  function make(tag, attrs = {}, text) {
+    const node = doc.createElement(tag);
+    for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, value);
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  /* what follows the reading: one pass per frame while the page scrolls, and at once on a resize */
+  const watchers = [];
+  let queued = false;
+  const each = () => { for (const watcher of watchers) watcher(); };
+  window.addEventListener('scroll', () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; each(); });
+  }, { passive: true });
+  window.addEventListener('resize', each);
+
+  /* a thin line at the top says how far the page has been read */
+  function progress() {
+    const line = make('div', { class: 'az-progress', 'aria-hidden': 'true' });
+    doc.body.prepend(line);
+    const read = () => {
+      const room = root.scrollHeight - window.innerHeight;
+      line.style.setProperty('--read', room > 0 ? Math.min(1, Math.max(0, window.scrollY / room)).toFixed(4) : '0');
+    };
+    watchers.push(read);
+    read();
+  }
+
+  /* the contents follow the reading: a rail in the margin with room for it, else a bar at the top
+     with the title, the part being read and the list a press away */
+  function contents() {
+    const nav = doc.querySelector('.az-contents');
+    if (!nav) return;
+    const list = nav.querySelector('ol');
+    const marks = all('a[href^="#"]', nav).map((link) => ({ link, target: byHash(link.getAttribute('href')) })).filter((mark) => mark.target);
+    const toggle = make('button', { type: 'button', class: 'az-contents-toggle', 'aria-expanded': 'false' });
+    const now = make('span', { class: 'az-contents-now' });
+    toggle.append(make('span', { class: 'az-bar-title' }, words(doc.querySelector('.az-title')) || doc.title), now,
+      make('span', { class: 'az-contents-word' }, 'Contents'));
+    if (list) toggle.setAttribute('aria-controls', idOf(list));
+    nav.prepend(toggle);
+    const open = (on) => {
+      nav.classList.toggle('az-open', on);
+      toggle.setAttribute('aria-expanded', String(on));
+    };
+    const barred = () => story || !roomy.matches;
+    const settle = () => {
+      nav.classList.toggle('az-bar', barred());
+      root.classList.toggle('az-barred', barred());
+      if (!barred()) open(false);
+    };
+    roomy.addEventListener?.('change', settle);
+    settle();
+    toggle.addEventListener('click', () => open(!nav.classList.contains('az-open')));
+    nav.addEventListener('click', (event) => { if (event.target.closest('a')) open(false); });
+    nav.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && nav.classList.contains('az-open')) { open(false); toggle.focus(); }
+    });
+    let current = null;
+    const mark = () => {
+      const line = window.innerHeight * 0.28;
+      let found = marks[0] || null;
+      for (const item of marks) if (item.target.getBoundingClientRect().top <= line) found = item;
+      if (found === current) return;
+      current?.link.removeAttribute('aria-current');
+      current = found;
+      if (!found) return;
+      found.link.setAttribute('aria-current', 'true');
+      now.textContent = words(found.link);
+      // the link stays in sight in a long rail, without moving the page
+      if (barred() || !list) return;
+      const box = list.getBoundingClientRect();
+      const at = found.link.getBoundingClientRect();
+      if (at.top < box.top + 32 || at.bottom > box.bottom - 32) list.scrollTop += at.top - box.top - box.height / 3;
+    };
+    watchers.push(mark);
+    mark();
+  }
+
+  /* a picture opens large: zoomed, moved, its caption and credit kept with it */
+  const lightbox = (() => {
+    let box, stage, picture, caption, credit, level, opener;
+    const view = { fit: 1, scale: 1, x: 0, y: 0 };
+    const button = (act, text, label) => make('button', { type: 'button', 'data-act': act, title: label, 'aria-label': label }, text);
+
+    function build() {
+      box = make('dialog', { class: 'az-lightbox', 'aria-label': 'Picture' });
+      const bar = make('div', { class: 'az-lb-bar' });
+      level = make('span', { class: 'az-lb-level', 'aria-live': 'polite' }, '100%');
+      bar.append(button('out', '−', 'Zoom out'), level, button('in', '+', 'Zoom in'), button('fit', 'Fit', 'The whole picture'), button('close', '× Close', 'Close'));
+      stage = make('div', { class: 'az-lb-stage' });
+      picture = make('img', { alt: '', draggable: 'false' });
+      stage.append(picture);
+      const foot = make('div', { class: 'az-lb-foot' });
+      caption = make('div', { class: 'az-lb-caption' });
+      credit = make('div', { class: 'az-lb-credit' });
+      foot.append(caption, credit);
+      box.append(bar, stage, foot);
+      doc.body.append(box);
+      bar.addEventListener('click', (event) => {
+        const act = event.target.closest('button')?.getAttribute('data-act');
+        if (act === 'close') close();
+        else if (act) zoom({ in: 1.5, out: 1 / 1.5, fit: 0 }[act]);
+      });
+      box.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
+      box.addEventListener('keydown', keys);
+      stage.addEventListener('wheel', (event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 1.18 : 1 / 1.18, spot(event)); }, { passive: false });
+      stage.addEventListener('dblclick', (event) => zoom(view.scale > view.fit * 1.01 ? 0 : 2.5, spot(event)));
+      let from = null;
+      stage.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        from = { x: event.clientX - view.x, y: event.clientY - view.y, id: event.pointerId };
+        stage.setPointerCapture?.(event.pointerId);
+      });
+      stage.addEventListener('pointermove', (event) => {
+        if (from?.id !== event.pointerId) return;
+        view.x = event.clientX - from.x;
+        view.y = event.clientY - from.y;
+        paint(false);
+      });
+      for (const type of ['pointerup', 'pointercancel']) stage.addEventListener(type, () => { from = null; });
+      window.addEventListener('resize', () => { if (box.open) zoom(0); });
+    }
+
+    const spot = (event) => {
+      const at = stage.getBoundingClientRect();
+      return { x: event.clientX - at.left, y: event.clientY - at.top };
+    };
+    const size = () => ({
+      w: stage.clientWidth || window.innerWidth, h: stage.clientHeight || window.innerHeight,
+      iw: picture.naturalWidth || 1, ih: picture.naturalHeight || 1,
+    });
+    /** The picture never leaves the stage: smaller than it, it stays in the middle. */
+    function paint(moving) {
+      const s = size();
+      const w = s.iw * view.scale;
+      const h = s.ih * view.scale;
+      view.x = w <= s.w ? (s.w - w) / 2 : Math.min(0, Math.max(s.w - w, view.x));
+      view.y = h <= s.h ? (s.h - h) / 2 : Math.min(0, Math.max(s.h - h, view.y));
+      stage.classList.toggle('az-moving', moving && !reduced.matches);
+      picture.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+      level.textContent = `${Math.round((view.scale / view.fit) * 100)}%`;
+    }
+    /** Zoom by `factor` about a point of the stage, its middle by default; 0 shows the whole picture. */
+    function zoom(factor, at) {
+      const s = size();
+      view.fit = Math.min(s.w / s.iw, s.h / s.ih, 1);
+      const to = factor ? Math.min(Math.max(view.scale * factor, view.fit), Math.max(view.fit * 8, 4)) : view.fit;
+      const p = at || { x: s.w / 2, y: s.h / 2 };
+      view.x = p.x - ((p.x - view.x) * to) / view.scale;
+      view.y = p.y - ((p.y - view.y) * to) / view.scale;
+      view.scale = to;
+      paint(true);
+    }
+    function keys(event) {
+      const moves = { ArrowLeft: [60, 0], ArrowRight: [-60, 0], ArrowUp: [0, 60], ArrowDown: [0, -60] };
+      const factors = { '+': 1.5, '=': 1.5, '-': 1 / 1.5, 0: 0 };
+      if (event.key === 'Tab') {
+        // Tab goes round the lightbox's own buttons, never behind it
+        const stops = all('button', box);
+        const at = stops.indexOf(doc.activeElement);
+        stops[event.shiftKey ? (at <= 0 ? stops.length - 1 : at - 1) : (at + 1) % stops.length].focus();
+      } else if (event.key === 'Escape') close();
+      else if (Object.hasOwn(factors, event.key)) zoom(factors[event.key]);
+      else if (moves[event.key]) {
+        view.x += moves[event.key][0];
+        view.y += moves[event.key][1];
+        paint(true);
+      } else return;
+      event.preventDefault();
+    }
+    function open(source) {
+      const image = source.querySelector('img');
+      if (!image) return;
+      if (!box) build();
+      const figure = source.closest('figure');
+      opener = source;
+      // a wall's frame shows a small picture and opens a larger one
+      picture.src = source.dataset.large || image.currentSrc || image.src;
+      picture.alt = image.alt || '';
+      box.setAttribute('aria-label', image.alt || 'Picture');
+      caption.replaceChildren();
+      credit.replaceChildren();
+      const said = figure?.querySelector('.az-caption');
+      const owed = figure?.querySelector('.az-credit');
+      if (said) caption.append(said.cloneNode(true));
+      if (owed) credit.append(owed.cloneNode(true));
+      for (const node of all('[id]', box)) node.removeAttribute('id');
+      for (const node of [...all('[hidden]', caption), ...all('[hidden]', credit)]) node.removeAttribute('hidden');
+      if (box.showModal) box.showModal(); else box.setAttribute('open', '');
+      root.classList.add('az-locked');
+      view.scale = 1;
+      if (picture.complete) zoom(0); else picture.addEventListener('load', () => zoom(0), { once: true });
+      box.querySelector('[data-act="close"]').focus();
+    }
+    function close() {
+      if (box.open && box.close) box.close();
+      box.removeAttribute('open');
+      root.classList.remove('az-locked');
+      opener?.focus();
+      opener = null;
+    }
+    return { open, close: () => { if (box?.hasAttribute('open')) close(); } };
+  })();
+
+  /* a press on a picture opens it; a graphic one is shown first */
+  function pictures() {
+    doc.addEventListener('click', (event) => {
+      const button = event.target.closest('button.az-zoom');
+      if (!button) return;
+      const veiled = button.closest('.az-graphic');
+      if (veiled && !veiled.classList.contains('az-revealed')) {
+        veiled.classList.add('az-revealed');
+        button.setAttribute('aria-label', button.dataset.label || 'Open larger');
+        return;
+      }
+      lightbox.open(button);
+    });
+    for (const figure of all('.az-graphic')) {
+      const button = figure.querySelector('.az-zoom');
+      if (button) {
+        button.dataset.label = button.getAttribute('aria-label') || '';
+        button.setAttribute('aria-label', 'Graphic picture, blurred. Press to show it');
+      }
+      for (const clip of all('video', figure)) clip.addEventListener('play', () => figure.classList.add('az-revealed'), { once: true });
+    }
+  }
+
+  /* a pair slides: the keyboard's arrows, or a drag anywhere on it */
+  function pairs() {
+    for (const pair of all('.az-compare')) {
+      const slider = pair.querySelector('.az-slider');
+      if (!slider) continue;
+      const set = () => {
+        const value = Math.min(100, Math.max(0, Number(slider.value) || 0));
+        pair.style.setProperty('--az-split', `${value}%`);
+        slider.setAttribute('aria-valuetext', `${value}% before, ${100 - value}% after`);
+      };
+      const follow = (event) => {
+        const at = pair.getBoundingClientRect();
+        if (!at.width) return;
+        slider.value = String(Math.round(((event.clientX - at.left) / at.width) * 1000) / 10);
+        set();
+      };
+      let held = null;
+      slider.addEventListener('input', set);
+      pair.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        held = event.pointerId;
+        pair.setPointerCapture?.(held);
+        follow(event);
+        slider.focus({ preventScroll: true });
+        event.preventDefault();
+      });
+      pair.addEventListener('pointermove', (event) => { if (held === event.pointerId) follow(event); });
+      for (const type of ['pointerup', 'pointercancel']) pair.addEventListener(type, () => { held = null; });
+      set();
+    }
+  }
+
+  /* a timecode plays its passage of the clip, and stops at its end */
+  function timecodes() {
+    doc.addEventListener('click', (event) => {
+      const link = event.target.closest('a.az-time');
+      const clip = link && doc.getElementById(link.dataset.clip || link.hash.slice(1));
+      if (!clip?.play) return;
+      event.preventDefault();
+      const end = Number(link.dataset.end) || 0;
+      reveal(clip);
+      for (const other of all('a.az-playing')) other.classList.remove('az-playing');
+      link.classList.add('az-playing');
+      const stop = () => {
+        if (end && clip.currentTime >= end) clip.pause();
+      };
+      clip.addEventListener('timeupdate', stop);
+      clip.addEventListener('pause', () => {
+        link.classList.remove('az-playing');
+        clip.removeEventListener('timeupdate', stop);
+      }, { once: true });
+      try { clip.currentTime = Number(link.dataset.t) || 0; } catch { /* not loaded yet: it starts from the top */ }
+      quietly(clip.play());
+      clip.scrollIntoView?.({ block: 'center', behavior: motion() });
+    });
+  }
+
+  /** Bring what `node` sits in into sight: the step that holds it. */
+  function reveal(node) {
+    const step = node.closest?.('.az-steps > .az-step');
+    step?.parentNode.azShow?.(all(':scope > .az-step', step.parentNode).indexOf(step));
+  }
+
+  /* a table sorts by any column, filters past twelve rows, and points at a coded row; its
+     settings line may ask for the filter always or never, no sorting, or its first rows only */
+  const NUMBER = /^[~≈<>≥≤+-]?\s*-?[\d\s.,]*\d(?:[.,]\d+)?\s*(?:%|km|m|s|h)?$/i;
+  const numeric = (text) => (NUMBER.test(text) ? Number(text.replace(/[^\d.,-]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.')) : NaN);
+
+  function tables() {
+    for (const table of all('table.az-table')) {
+      const body = table.querySelector(':scope > tbody');
+      if (!body) continue;
+      const rows = all(':scope > tr', body);
+      const heads = all(':scope > thead > tr:first-child > th', table);
+      const { search, sort } = table.dataset;
+      const fold = Number(table.dataset.fold) || 0;
+      let open = false;
+      let wanted = '';
+      let more = null;
+      // past its first rows a long table folds, unless shown whole or filtered
+      const refold = () => {
+        let shown = 0;
+        for (const row of all(':scope > tr', body)) row.classList.toggle('az-folded', fold > 0 && !open && !wanted && (shown += 1) > fold);
+        if (more) more.textContent = open ? `Show the first ${fold} rows` : `Show all ${rows.length} rows`;
+        // Chromium draws a column kept in sight out of place once rows come and go: it is laid out again
+        if (table.classList.contains('az-first')) {
+          table.classList.remove('az-first');
+          void table.offsetWidth;
+          table.classList.add('az-first');
+        }
+      };
+      // a hash or an address in a cell may break anywhere, rather than widen the table
+      for (const cell of all(':scope > tr > td', body)) if (/\S{24,}/.test(cell.textContent)) cell.classList.add('az-token');
+      if (sort !== 'off') heads.forEach((head, column) => {
+        // a column with no header holds the rows' labels: nothing to sort by
+        if (!words(head)) return;
+        const button = make('button', { type: 'button', class: 'az-sort', title: 'Sort by this column' });
+        button.append(...head.childNodes);
+        head.append(button);
+        button.addEventListener('click', () => {
+          const down = head.getAttribute('aria-sort') === 'ascending';
+          for (const other of heads) other.removeAttribute('aria-sort');
+          head.setAttribute('aria-sort', down ? 'descending' : 'ascending');
+          const cell = (row) => words(row.children[column]);
+          const counted = rows.every((row) => !cell(row) || !Number.isNaN(numeric(cell(row))));
+          const order = (a, b) => (counted ? (numeric(cell(a)) || 0) - (numeric(cell(b)) || 0)
+            : cell(a).localeCompare(cell(b), undefined, { numeric: true, sensitivity: 'base' }));
+          body.append(...rows.slice().sort((a, b) => (down ? -order(a, b) : order(a, b))));
+          refold();
+        });
+      });
+      const wrap = table.closest('.az-table-wrap') || table;
+      // a table wider than its place slides in its own frame; one that fits keeps its header stuck to the page
+      const fits = () => wrap.classList.toggle('az-slides', table.scrollWidth > wrap.clientWidth + 1);
+      fits();
+      window.addEventListener('resize', fits);
+      // the filter and the fold stand on the table's own edges: they share a box as wide as the table
+      const boxed = () => {
+        if (wrap.parentNode.classList?.contains('az-table-block')) return;
+        const block = make('div', { class: 'az-table-block' });
+        wrap.replaceWith(block);
+        block.append(wrap);
+      };
+      if (fold && rows.length > fold) {
+        more = make('button', { type: 'button', class: 'az-table-more', 'aria-expanded': 'false' });
+        more.addEventListener('click', () => {
+          open = !open;
+          more.setAttribute('aria-expanded', open);
+          refold();
+        });
+        boxed();
+        wrap.after(more);
+        table.azUnfold = () => { open = true; refold(); };
+        refold();
+      }
+      if (search === 'never' || (search !== 'always' && rows.length <= 12)) continue;
+      const tools = make('div', { class: 'az-table-tools' });
+      const field = make('input', { type: 'search', class: 'az-filter', placeholder: 'Filter the rows', 'aria-label': 'Filter the rows of this table' });
+      const said = make('span', { 'aria-live': 'polite' }, `${rows.length} rows`);
+      tools.append(field, said);
+      boxed();
+      wrap.before(tools);
+      const texts = rows.map((row) => words(row).toLocaleLowerCase());
+      field.addEventListener('input', () => {
+        wanted = field.value.trim().toLocaleLowerCase();
+        let shown = 0;
+        rows.forEach((row, index) => {
+          row.hidden = Boolean(wanted) && !texts[index].includes(wanted);
+          if (!row.hidden) shown += 1;
+        });
+        said.textContent = wanted ? `${shown} of ${rows.length} rows` : `${rows.length} rows`;
+        if (more) more.hidden = Boolean(wanted);
+        refold();
+      });
+      table.azFilter = field;
+    }
+  }
+
+  /** The row, source or heading an address names, made ready to be seen: its step shown, a hidden row filtered back in, a row or source flashed. */
+  function point(hash) {
+    const target = byHash(hash);
+    if (!target) return null;
+    reveal(target);
+    const field = target.tagName === 'TR' && target.closest('table')?.azFilter;
+    if (target.hidden && field) {
+      field.value = '';
+      field.dispatchEvent(new Event('input'));
+    }
+    if (target.classList?.contains('az-folded')) target.closest('table').azUnfold();
+    if (target.matches?.('tr, .az-sources li')) {
+      target.classList.remove('az-flash');
+      void target.offsetWidth;
+      target.classList.add('az-flash');
+    }
+    return target;
+  }
+
+  /* a link to a part of the page goes there by itself. In the Page pane the page is a frame
+     whose address is the app's, which the browser would leave for a blank page */
+  const ownAddress = () => /^(?:file|https?):$/.test(location.protocol);
+  function go(hash) {
+    lightbox.close();
+    const target = point(hash);
+    if (!target) return;
+    target.scrollIntoView?.({ behavior: motion(), block: target.tagName === 'TR' ? 'center' : 'start' });
+    // the keyboard follows, from where the page now reads
+    if (!target.matches('a[href], button, input, select, textarea, summary, video, [tabindex]')) target.setAttribute('tabindex', '-1');
+    target.focus?.({ preventScroll: true });
+    if (ownAddress() && location.hash !== hash) {
+      try { history.pushState(null, '', hash); } catch { /* a page that may not change its address keeps it */ }
+    }
+  }
+
+  function addresses() {
+    doc.addEventListener('click', (event) => {
+      const link = event.target.closest?.('a[href^="#"]');
+      if (!link || event.defaultPrevented) return;
+      // a new tab of a file opens the file there; of the Page pane's frame it would open the app
+      if ((event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) && ownAddress()) return;
+      event.preventDefault();
+      go(link.getAttribute('href'));
+    });
+    doc.addEventListener('auxclick', (event) => {
+      if (!ownAddress() && event.target.closest?.('a[href^="#"]')) event.preventDefault();
+    });
+    window.addEventListener('hashchange', () => point(location.hash));
+    if (location.hash) point(location.hash);
+  }
+
+  /* words that cite a source open its card: the entry from the Sources list (or a note's
+     own text), shown on hover after a beat, on keyboard focus, and on a finger's first tap,
+     which then offers the list; a mouse's click still follows the link */
+  function citations() {
+    let card = null;
+    let shown = null;
+    let opening = 0;
+    let closing = 0;
+    let pointer = 'mouse';
+    const SHOW_MS = 180;
+    const HIDE_MS = 250;
+    const trigger = (node) => node?.closest?.('[data-card]') ?? null;
+    const hide = () => {
+      clearTimeout(opening);
+      clearTimeout(closing);
+      shown?.removeAttribute('aria-describedby');
+      shown?.removeAttribute('aria-expanded');
+      shown = null;
+      card?.remove();
+      card = null;
+    };
+    const later = () => { clearTimeout(opening); clearTimeout(closing); closing = setTimeout(hide, HIDE_MS); };
+    function show(words, withList) {
+      const target = doc.getElementById(words.dataset.card);
+      if (!target) return;
+      hide();
+      card = make('div', { class: 'az-card', role: 'tooltip', id: 'az-card' });
+      card.append(make('span', { class: 'az-card-kind' }, words.dataset.label || target.dataset.label || 'Source'));
+      const copy = target.cloneNode(true);
+      for (const node of all('[id]', copy)) node.removeAttribute('id');
+      for (const node of all('.az-back', copy)) node.remove();
+      const body = make('div', { class: 'az-card-body' });
+      body.append(...copy.childNodes);
+      card.append(body);
+      if (words.dataset.page) card.append(make('span', { class: 'az-card-page' }, `Cited here: page ${words.dataset.page}`));
+      if (withList) {
+        const list = make('a', { class: 'az-card-list', href: `#${target.id}` }, 'Go to the list');
+        list.addEventListener('click', () => hide());
+        card.append(list);
+      }
+      card.addEventListener('pointerenter', () => clearTimeout(closing));
+      card.addEventListener('pointerleave', (event) => { if (event.pointerType === 'mouse') later(); });
+      doc.body.append(card);
+      shown = words;
+      words.setAttribute('aria-describedby', 'az-card');
+      words.setAttribute('aria-expanded', 'true');
+      const at = words.getBoundingClientRect();
+      const own = card.getBoundingClientRect();
+      const below = at.bottom + 8 + own.height < window.innerHeight || at.top < own.height + 16;
+      card.style.left = `${Math.min(Math.max(8, at.left + at.width / 2 - own.width / 2), window.innerWidth - own.width - 8) + window.scrollX}px`;
+      card.style.top = `${(below ? at.bottom + 8 : at.top - own.height - 8) + window.scrollY}px`;
+    }
+    doc.addEventListener('pointerdown', (event) => { pointer = event.pointerType || 'mouse'; }, true);
+    doc.addEventListener('pointerover', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      const words = trigger(event.target);
+      if (!words) return;
+      clearTimeout(closing);
+      if (words === shown) return;
+      clearTimeout(opening);
+      opening = setTimeout(() => show(words, false), card ? 0 : SHOW_MS);
+    });
+    doc.addEventListener('pointerout', (event) => {
+      if (event.pointerType !== 'mouse') return;
+      const words = trigger(event.target);
+      if (!words || words.contains(event.relatedTarget) || card?.contains(event.relatedTarget)) return;
+      clearTimeout(opening);
+      if (shown) later();
+    });
+    doc.addEventListener('focusin', (event) => {
+      const words = trigger(event.target);
+      if (words && pointer === 'mouse' && words !== shown) show(words, false);
+    });
+    doc.addEventListener('focusout', (event) => {
+      if (shown && !card?.contains(event.relatedTarget) && !shown.contains(event.relatedTarget)) later();
+    });
+    doc.addEventListener('click', (event) => {
+      const words = trigger(event.target);
+      if (words && pointer !== 'mouse') {
+        // a finger has no hover: the first tap opens the card, the card's own link goes to the list
+        if (words !== shown) { event.preventDefault(); event.stopImmediatePropagation(); show(words, true); }
+        return;
+      }
+      if (shown && !words && !card?.contains(event.target)) hide();
+    }, true);
+    doc.addEventListener('keydown', (event) => { if (event.key === 'Escape' && shown) hide(); });
+    window.addEventListener('scroll', () => { if (shown && !shown.matches(':focus') && pointer === 'mouse') hide(); }, { passive: true });
+  }
+
+  /* steps go one at a time: the buttons, the dots, the arrow keys; a step's clip plays muted */
+  function steps() {
+    for (const section of all('section.az-steps')) {
+      const list = all(':scope > .az-step', section);
+      if (list.length < 2) continue;
+      // the bar comes with the page, hidden: without script the steps stay stacked
+      const bar = section.querySelector(':scope > .az-steps-bar');
+      const back = bar?.querySelector('.az-steps-prev');
+      const next = bar?.querySelector('.az-steps-next');
+      if (!back || !next) continue;
+      bar.hidden = false;
+      const dots = all('.az-steps-dots button', bar);
+      const count = make('span', { class: 'az-steps-count', 'aria-live': 'polite' });
+      next.before(count);
+      let at = -1;
+      function show(index) {
+        index = Math.max(0, Math.min(list.length - 1, index));
+        if (index === at) return;
+        at = index;
+        list.forEach((step, i) => {
+          const on = i === index;
+          step.classList.toggle('az-on', on);
+          step.toggleAttribute('inert', !on);
+          step.setAttribute('aria-hidden', String(!on));
+          for (const clip of all('video', step)) {
+            if (!on) { clip.pause?.(); continue; }
+            clip.muted = true;
+            quietly(clip.play?.());
+          }
+          if (dots[i]) {
+            if (on) dots[i].setAttribute('aria-current', 'step');
+            else dots[i].removeAttribute('aria-current');
+          }
+        });
+        back.disabled = index === 0;
+        next.disabled = index === list.length - 1;
+        count.textContent = `${index + 1} / ${list.length}`;
+        // a button just put out of reach hands the keyboard to the step's dot
+        if (doc.activeElement?.disabled) dots[index]?.focus();
+        const dot = dots[index];
+        const row = dot?.closest('.az-steps-dots');
+        if (row && row.scrollWidth > row.clientWidth) row.scrollLeft = dot.offsetLeft - row.clientWidth / 2;
+      }
+      back.addEventListener('click', () => show(at - 1));
+      next.addEventListener('click', () => show(at + 1));
+      dots.forEach((dot, index) => dot.addEventListener('click', () => show(index)));
+      section.addEventListener('keydown', (event) => {
+        if (event.target.closest('input, video')) return;
+        const rtl = getComputedStyle(section).direction === 'rtl';
+        const go = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1 }[event.key];
+        if (go) show(at + go);
+        else if (event.key === 'Home') show(0);
+        else if (event.key === 'End') show(list.length - 1);
+        else return;
+        event.preventDefault();
+      });
+      if (!section.hasAttribute('tabindex')) section.tabIndex = -1;
+      section.setAttribute('aria-roledescription', 'steps');
+      section.azShow = show;
+      show(0);
+    }
+  }
+
+  /* a story keeps the picture of the step being read beside the words, and moves in on what it names */
+  /** `x,y,w,h` as fractions of the picture, or null. */
+  function zoomOf(figure) {
+    const [x, y, w, h] = String(figure?.dataset.zoom || '').split(',').map(Number);
+    if (![x, y, w, h].every(Number.isFinite) || w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > 1.001 || y + h > 1.001) return null;
+    return { x, y, w, h };
+  }
+  /** The transform that fills the picture's box with its zoom rectangle, kept whole. */
+  function zoomTransform(zoom) {
+    if (!zoom) return 'none';
+    const scale = Math.min(6, 1 / Math.max(zoom.w, zoom.h));
+    const dx = (0.5 - (zoom.x + zoom.w / 2)) * 100;
+    const dy = (0.5 - (zoom.y + zoom.h / 2)) * 100;
+    return `scale(${scale.toFixed(4)}) translate(${dx.toFixed(3)}%, ${dy.toFixed(3)}%)`;
+  }
+
+  function stories() {
+    for (const section of all('section.az-story')) {
+      const figures = all('.az-story-figures > figure', section);
+      const parts = all('.az-story-step', section);
+      if (!figures.length || !parts.length) continue;
+      const figureOf = (step) => figures.find((figure) => figure.dataset.step === step?.dataset.step) || null;
+      const imageOf = (figure) => figure?.querySelector('img');
+      let at = null;
+      // where the reader is, quietly on each card of a story written as one: 2 / 4
+      const scenes = section.classList.contains('az-scenes');
+      const counts = parts.map((part, index) => (scenes ? null
+        : make('span', { class: 'az-story-count', 'aria-hidden': 'true' }, `${index + 1} / ${parts.length}`)));
+      function show(step) {
+        if (step === at) return;
+        const before = figureOf(at);
+        at = step;
+        const figure = figureOf(step);
+        for (const part of parts) part.classList.toggle('az-on', part === step);
+        if (!figure) return;
+        for (const other of figures) {
+          other.classList.toggle('az-on', other === figure);
+          other.setAttribute('aria-hidden', String(other !== figure));
+          other.toggleAttribute('inert', other !== figure);
+        }
+        // a map is moved by its card: where its step looks, or the whole map for its words
+        if (figure.azMap) { figure.azMap.story(step?.dataset.mapStep); return; }
+        const image = imageOf(figure);
+        if (!image) return;
+        // the same picture moves on from where the last step left it; another starts whole and moves in
+        const previous = imageOf(before);
+        const same = previous && before !== figure && previous.getAttribute('src') === image.getAttribute('src');
+        image.style.transition = 'none';
+        image.style.transform = same ? previous.style.transform : 'none';
+        void image.offsetWidth;
+        image.style.transition = '';
+        image.style.transform = zoomTransform(zoomOf(figure));
+      }
+      function live(on) {
+        section.classList.toggle('az-live', on);
+        at = null;
+        parts.forEach((part, index) => counts[index] && (on ? part.prepend(counts[index]) : counts[index].remove()));
+        if (!on) {
+          for (const node of [...figures, ...parts]) {
+            node.classList.remove('az-on');
+            node.removeAttribute('aria-hidden');
+            node.removeAttribute('inert');
+          }
+          for (const figure of figures) if (imageOf(figure)) imageOf(figure).style.transform = '';
+          return;
+        }
+        show(parts[0]);
+        follow();
+      }
+      // the step being read is the last whose top has passed the line, measured as the page
+      // scrolls: an observer's margins are not kept inside the Page pane's frame. A map or a
+      // picture holding the screen keeps its step, whatever the window does meanwhile
+      function follow() {
+        if (!section.classList.contains('az-live') || doc.fullscreenElement || root.classList.contains('az-locked')) return;
+        const box = section.getBoundingClientRect();
+        if (!box.height || box.bottom < 0 || box.top > window.innerHeight) return;
+        const line = window.innerHeight * 0.6;
+        let found = parts[0];
+        for (const part of parts) if (part.getBoundingClientRect().top <= line) found = part;
+        show(found);
+      }
+      // live with motion, and with room unless the whole page is a story; anything else reads picture then words
+      const can = () => !reduced.matches && (story || wide.matches);
+      const settle = () => { if (can() !== section.classList.contains('az-live')) live(can()); };
+      wide.addEventListener?.('change', settle);
+      reduced.addEventListener?.('change', settle);
+      watchers.push(follow);
+      live(can());
+    }
+  }
+
+/*
+ * Azimut reader, its maps: spliced into reader.js where it says `az:map`, only in a page
+ * that holds a map (engine/notes_html.py), so every other page keeps the reader it had.
+ * It reads the helpers reader.js holds (make, all, go, motion, reduced) in its scope.
+ */
+  /* a map: the ground and the drawing over it zoom and pan together, a feature opens its card,
+     the days go by on a timeline, and its steps fly it where they look. The page holds it whole
+     without this: the drawing as on its last day. The figure's data (`script.az-map-data`) is
+     what every reader of the map shares; `figure.azMap` is how the story drives it */
+  const MARKER_PX = 26;
+  const MARKER_UNITS = 64;
+  /** A mark's name, written under it as the app's map writes it: its own size, else this. */
+  const LABEL_PX = 11;
+  const mercX = (lon) => (lon + 180) / 360;
+  const mercY = (lat) => {
+    const sine = Math.sin((Math.max(-85.0511, Math.min(85.0511, lat)) * Math.PI) / 180);
+    return 0.5 - Math.log((1 + sine) / (1 - sine)) / (4 * Math.PI);
+  };
+  const longDay = (day, month = 'long') => {
+    const at = new Date(`${day}T00:00:00Z`);
+    return Number.isNaN(at.getTime()) ? day : at.toLocaleDateString('en-GB', { day: 'numeric', month, year: 'numeric', timeZone: 'UTC' });
+  };
+  const ease = (t) => 1 - (1 - t) ** 3;
+  /* marks that would cover one another are spread round the place they share, a ring for a few,
+     a sunflower for more, the nearest to the middle (`arrange` in engine/notes_maps.py) */
+  const NEAR_PX = 19;
+  const SPREAD_PX = 27;
+  function slots(count) {
+    if (count <= 6) {
+      const radius = count > 1 ? SPREAD_PX / (2 * Math.sin(Math.PI / count)) : 0;
+      const start = count !== 2 ? -Math.PI / 2 : Math.PI;
+      return Array.from({ length: count }, (_, slot) => [radius * Math.cos(start + (2 * Math.PI * slot) / count), radius * Math.sin(start + (2 * Math.PI * slot) / count)]);
+    }
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    const step = (SPREAD_PX / Math.sqrt(Math.PI)) * 1.05;
+    return Array.from({ length: count }, (_, slot) => [step * Math.sqrt(slot + 0.5) * Math.cos(slot * golden), step * Math.sqrt(slot + 0.5) * Math.sin(slot * golden)]);
+  }
+  /** A crowd larger than this is a count to press while the map can still move in on it. */
+  const BUBBLE_FROM = 12;
+  /** The app's full-screen icon (`maximize`, `minimize` in components/Icon.svelte): corners out to take the screen, in to give it back. */
+  const CORNERS = {
+    out: 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3',
+    in: 'M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3m8 0v-3a2 2 0 0 1 2-2h3',
+  };
+  /**
+   * Where each of `points` (`{id, x, y}` in pixels) stands once spread; a mark alone is not in it.
+   * With `bubbles`, a crowd past `from` (`BUBBLE_FROM`, or the map's own `crowds`) is left out and
+   * answered in `crowds` instead.
+   */
+  function arrange(points, { bubbles = false, from = BUBBLE_FROM } = {}) {
+    const grid = new Map();
+    const cellOf = (p) => `${Math.floor(p.x / NEAR_PX)},${Math.floor(p.y / NEAR_PX)}`;
+    points.forEach((p, i) => { const key = cellOf(p); if (!grid.has(key)) grid.set(key, []); grid.get(key).push(i); });
+    const crowd = points.map((p, i) => {
+      const gx = Math.floor(p.x / NEAR_PX);
+      const gy = Math.floor(p.y / NEAR_PX);
+      const found = [];
+      for (let dx = -1; dx <= 1; dx += 1) for (let dy = -1; dy <= 1; dy += 1) {
+        for (const j of grid.get(`${gx + dx},${gy + dy}`) || []) if (j !== i && Math.hypot(points[j].x - p.x, points[j].y - p.y) < NEAR_PX) found.push(j);
+      }
+      return found;
+    });
+    const byId = (a, b) => (points[a].id < points[b].id ? -1 : points[a].id > points[b].id ? 1 : 0);
+    const order = points.map((_, i) => i).sort((a, b) => crowd[b].length - crowd[a].length || points[a].y - points[b].y || points[a].x - points[b].x);
+    const taken = new Set();
+    const out = new Map();
+    const crowds = [];
+    for (const i of order) {
+      if (taken.has(i)) continue;
+      const group = [i, ...crowd[i].filter((j) => !taken.has(j))];
+      for (const j of group) taken.add(j);
+      if (group.length === 1) continue;
+      const cx = group.reduce((sum, j) => sum + points[j].x, 0) / group.length;
+      const cy = group.reduce((sum, j) => sum + points[j].y, 0) / group.length;
+      if (bubbles && group.length > from) {
+        crowds.push({ ids: group.map((j) => points[j].id), x: cx, y: cy });
+        continue;
+      }
+      const sorted = group.slice().sort(group.length <= 6
+        ? (a, b) => Math.atan2(points[a].y - cy, points[a].x - cx) - Math.atan2(points[b].y - cy, points[b].x - cx) || byId(a, b)
+        : (a, b) => Math.hypot(points[a].x - cx, points[a].y - cy) - Math.hypot(points[b].x - cx, points[b].y - cy) || byId(a, b));
+      slots(group.length).forEach(([x, y], n) => out.set(points[sorted[n]].id, [cx + x, cy + y]));
+    }
+    out.crowds = crowds;
+    return out;
+  }
+
+  function mapOf(figure, data) {
+    const stage = figure.querySelector('.az-map-stage');
+    const svg = stage?.querySelector('svg.az-map-svg');
+    if (!stage || !svg) return null;
+    const ground = stage.querySelector('.az-map-ground');
+    const world = stage.querySelector('.az-map-world');
+    /* a stage of another shape than the map's (a map page, the whole screen) holds the map whole in its middle:
+       the bands round it show the map's own ground, stretched to cover them, blurred and darkened, under the
+       drawing and under a live map taking over (reader.map.css), so they never read as a map still loading */
+    let fill = null;
+    function filled() {
+      if (fill || !ground) return;
+      fill = make('img', { class: 'az-map-fill', src: ground.getAttribute('src') || '', alt: '', 'aria-hidden': 'true', decoding: 'async' });
+      stage.prepend(fill);
+    }
+    const details = all('.az-map-detail', stage);
+    const [, , W = 1600, H = 1000] = String(svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+    const [west, south, east, north] = data.bounds || [0, 0, 1, 1];
+    const x0 = mercX(west);
+    const y0 = mercY(north);
+    const spanX = Math.max(1e-12, mercX(east) - x0);
+    const spanY = Math.max(1e-12, mercY(south) - y0);
+    const project = (lon, lat) => [((mercX(lon) - x0) / spanX) * W, ((mercY(lat) - y0) / spanY) * H];
+    const byId = new Map((data.features || []).map((feature) => [feature.id, feature]));
+    const shapes = all('.az-f', svg);
+    const nodeOf = new Map(shapes.map((node) => [node.dataset.id, node]));
+    const points = shapes.filter((node) => node.classList.contains('az-point'));
+    const labels = all('.az-label', svg);
+    const leaders = svg.querySelector('.az-leaders');
+    const bubbles = svg.ownerDocument.createElementNS(svg.namespaceURI, 'g');
+    bubbles.setAttribute('class', 'az-bubbles');
+    svg.append(bubbles);
+    /** A crowd too large to spread: its count, in a ring of its marks' colours; a press moves in on it. */
+    function bubble(crowd, unit) {
+      const node = svg.ownerDocument.createElementNS(svg.namespaceURI, 'g');
+      node.setAttribute('class', 'az-bubble');
+      node.setAttribute('transform', `translate(${(crowd.x * unit).toFixed(2)} ${(crowd.y * unit).toFixed(2)}) scale(${unit.toFixed(5)})`);
+      node.setAttribute('role', 'button');
+      node.setAttribute('tabindex', '0');
+      node.setAttribute('aria-label', `${crowd.ids.length} marks here. Press to move in`);
+      node.azIds = crowd.ids;
+      const radius = 15 + Math.min(9, crowd.ids.length / 5);
+      const back = svg.ownerDocument.createElementNS(svg.namespaceURI, 'circle');
+      back.setAttribute('r', String(radius));
+      back.setAttribute('class', 'az-bubble-back');
+      node.append(back);
+      const colours = new Map();
+      for (const id of crowd.ids) {
+        const colour = nodeOf.get(id)?.dataset.colour || '#ffffff';
+        colours.set(colour, (colours.get(colour) || 0) + 1);
+      }
+      let turn = -Math.PI / 2;
+      for (const [colour, count] of colours) {
+        const sweep = (count / crowd.ids.length) * Math.PI * 2;
+        const arc = svg.ownerDocument.createElementNS(svg.namespaceURI, 'path');
+        const r = radius - 2.5;
+        const end = turn + Math.max(0.001, sweep - (colours.size > 1 ? 0.08 : 0.0001));
+        arc.setAttribute('d', `M${(r * Math.cos(turn)).toFixed(2)} ${(r * Math.sin(turn)).toFixed(2)}A${r} ${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${(r * Math.cos(end)).toFixed(2)} ${(r * Math.sin(end)).toFixed(2)}`);
+        arc.setAttribute('class', 'az-bubble-arc');
+        arc.setAttribute('stroke', colour);
+        node.append(arc);
+        turn += sweep;
+      }
+      const count = svg.ownerDocument.createElementNS(svg.namespaceURI, 'text');
+      count.setAttribute('class', 'az-bubble-count');
+      count.setAttribute('y', '4.6');
+      count.textContent = String(crowd.ids.length);
+      node.append(count);
+      return node;
+    }
+    /** Move in on a crowd until its marks stand apart, or as far as the ground stays sharp. */
+    function into(ids) {
+      const nodes = ids.map((id) => nodeOf.get(id)).filter(Boolean);
+      if (!nodes.length) return;
+      const xs = nodes.map((node) => Number(node.dataset.x));
+      const ys = nodes.map((node) => Number(node.dataset.y));
+      const { w, h } = size();
+      const f = fit();
+      const spanW = Math.max(1, Math.max(...xs) - Math.min(...xs)) * f;
+      const spanH = Math.max(1, Math.max(...ys) - Math.min(...ys)) * f;
+      const k = Math.min(most, Math.max(view.k * 2, Math.min((w * 0.55) / spanW, (h * 0.55) / spanH)));
+      const cx = ((Math.max(...xs) + Math.min(...xs)) / 2) * f;
+      const cy = ((Math.max(...ys) + Math.min(...ys)) / 2) * f;
+      fly({ k, x: w / 2 - cx * k, y: h / 2 - cy * k }, 900);
+    }
+    const labelOf = new Map(labels.map((label) => [label.dataset.for, label]));
+    const days = data.days || [];
+    /** How many marks make a crowd to press: the map's own `crowds`, none for 0. */
+    const crowdFrom = data.crowds === 0 ? Infinity : Number(data.crowds) || BUBBLE_FROM;
+    const view = { k: 1, x: 0, y: 0 };
+    let most = 24;
+    let picked = null;
+    let opener = null;
+    let currentDay = data.day || days[days.length - 1] || '';
+    let clashTimer = 0;
+    /** A live map that has taken the drawing over (reader.live.js), which then moves and draws it. */
+    let engine = null;
+    /** Whether the figure holds the whole screen (`screen`), where the stage takes the screen's shape. */
+    let full = false;
+    /** A map page's map (`page`): the page's whole room is its own, as the whole screen is, for good. */
+    let paged = false;
+    /** The features a map page's layer switcher took off the map, whatever their days. */
+    const hidden = new Set();
+    /** Where a map page's address asked the map to look, which a live map taking over looks at too. */
+    let asked = null;
+
+    stage.tabIndex = 0;
+    stage.setAttribute('aria-label', `${stage.getAttribute('aria-label') || 'Map'}. Plus and minus zoom, the arrows move it`);
+    for (const node of shapes) {
+      node.setAttribute('tabindex', '0');
+      node.setAttribute('role', 'button');
+    }
+
+    const size = () => ({ w: stage.clientWidth || 1, h: stage.clientHeight || 1 });
+    /**
+     * The ground's pixels a CSS pixel shows at the whole map, read off the picture it holds. The stage
+     * is the map's shape, but on the whole screen it is the screen's, the map held whole in its middle.
+     */
+    const fit = () => (full ? Math.min(size().w / W, size().h / H) : size().w / W);
+    /** The world's size on the stage at the whole map: the stage itself, but on the whole screen. */
+    const span = () => (full ? { w: W * fit(), h: H * fit() } : size());
+    /** The point of the map at the stage's middle as the view was last laid: a stage sized again keeps it there. */
+    let laid = null;
+    /** The view of the whole map: the world in the stage's middle. */
+    const whole = () => ({ k: 1, x: (size().w - span().w) / 2, y: (size().h - span().h) / 2 });
+    /** The view the map opens on: the part of it its block opens on (`data.opens`), held whole, else all of it. */
+    function opening() {
+      if (!Array.isArray(data.opens) || data.opens.length !== 4) return whole();
+      const [x0, y0] = project(data.opens[0], data.opens[3]);
+      const [x1, y1] = project(data.opens[2], data.opens[1]);
+      const { w, h } = size();
+      const f = fit();
+      const k = Math.max(1, Math.min(w / Math.max(1e-9, (x1 - x0) * f), h / Math.max(1e-9, (y1 - y0) * f)));
+      return { k, x: w / 2 - ((x0 + x1) / 2) * f * k, y: h / 2 - ((y0 + y1) / 2) * f * k };
+    }
+
+    /**
+     * The world never leaves the stage: its top left stays above and left of the stage's. Narrower
+     * than the stage, as on the whole screen, it stands in the stage's middle that way.
+     */
+    function paint() {
+      const { w, h } = size();
+      view.k = Math.min(most, Math.max(1, view.k));
+      const ww = span().w * view.k;
+      const wh = span().h * view.k;
+      view.x = ww < w ? (w - ww) / 2 : Math.min(0, Math.max(w - ww, view.x));
+      view.y = wh < h ? (h - wh) / 2 : Math.min(0, Math.max(h - wh, view.y));
+      laid = { x: (w / 2 - view.x) / (fit() * view.k), y: (h / 2 - view.y) / (fit() * view.k) };
+      if (world) {
+        world.style.width = full ? `${span().w.toFixed(2)}px` : '';
+        world.style.height = full ? `${span().h.toFixed(2)}px` : '';
+        world.style.transform = `translate(${view.x.toFixed(2)}px, ${view.y.toFixed(2)}px) scale(${view.k.toFixed(5)})`;
+      }
+      // a closer picture shows once the ground under it would blur
+      const sharp = (ground?.naturalWidth || W) / ((Number.parseFloat(ground?.style.width || '') / 100 || 1) * span().w);
+      for (const detail of details) detail.classList.toggle('az-on', view.k > sharp * 0.9);
+      const unit = 1 / (fit() * view.k);
+      const [shownW, shownH] = full ? [w * unit, h * unit] : [W / view.k, H / view.k];
+      svg.setAttribute('viewBox', `${(-view.x * unit).toFixed(3)} ${(-view.y * unit).toFixed(3)} ${shownW.toFixed(3)} ${shownH.toFixed(3)}`);
+      // on the whole screen the drawing shows what the page frames and nothing round it (the world clips its own
+      // ground), its tools, north arrow, scale and card on its corners: how far each edge of the map is from the stage's
+      for (const [edge, room] of [['t', view.y], ['r', w - view.x - ww], ['b', h - view.y - wh], ['l', view.x]]) {
+        stage.parentNode.style.setProperty(`--az-${edge}`, full ? `${Math.max(0, room).toFixed(1)}px` : '');
+      }
+      // where each mark stands at this zoom: its own place, or spread round one it shares
+      const px = 1 / unit;
+      const spread = arrange(points.filter((node) => !node.classList.contains('az-off'))
+        .map((node) => ({ id: node.dataset.id, x: Number(node.dataset.x) * px, y: Number(node.dataset.y) * px })),
+      { bubbles: view.k < most * 0.95, from: crowdFrom });
+      const grouped = new Set(spread.crowds.flatMap((one) => one.ids));
+      for (const node of points) node.classList.toggle('az-grouped', grouped.has(node.dataset.id));
+      bubbles.replaceChildren(...spread.crowds.map((one) => bubble(one, unit)));
+      const drawn = [];
+      for (const node of points) {
+        const scale = (MARKER_PX * (Number(node.dataset.s) || 1) * unit) / MARKER_UNITS;
+        const moved = spread.get(node.dataset.id);
+        const x = moved ? moved[0] * unit : Number(node.dataset.x);
+        const y = moved ? moved[1] * unit : Number(node.dataset.y);
+        node.azAt = [x, y];
+        node.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${scale.toFixed(5)})`);
+        if (!moved || grouped.has(node.dataset.id)) continue;
+        const leader = svg.ownerDocument.createElementNS(svg.namespaceURI, 'g');
+        leader.setAttribute('class', 'az-leader');
+        leader.dataset.for = node.dataset.id;
+        const line = svg.ownerDocument.createElementNS(svg.namespaceURI, 'line');
+        for (const [name, value] of [['x1', node.dataset.x], ['y1', node.dataset.y], ['x2', x.toFixed(2)], ['y2', y.toFixed(2)]]) line.setAttribute(name, value);
+        const dot = svg.ownerDocument.createElementNS(svg.namespaceURI, 'circle');
+        for (const [name, value] of [['cx', node.dataset.x], ['cy', node.dataset.y], ['r', (2.6 * unit).toFixed(3)]]) dot.setAttribute(name, value);
+        dot.setAttribute('fill', node.dataset.colour || '#fff');
+        leader.append(line, dot);
+        drawn.push(leader);
+      }
+      leaders?.replaceChildren(...drawn);
+      for (const label of labels) {
+        const anchor = nodeOf.get(label.dataset.for);
+        // a line's or an area's name stays on its middle, at the size of the others
+        if (label.dataset.x) {
+          label.setAttribute('y', (Number(label.dataset.y) + LABEL_PX * 0.35 * unit).toFixed(2));
+          label.setAttribute('font-size', (LABEL_PX * unit).toFixed(3));
+          label.style.strokeWidth = `${(3.2 * unit).toFixed(3)}px`;
+          continue;
+        }
+        if (!anchor?.azAt) continue;
+        // under its mark, as the app's map writes it: its top a little under the mark's middle
+        const size = Number(byId.get(label.dataset.for)?.style?.label_size) || LABEL_PX;
+        label.setAttribute('x', anchor.azAt[0].toFixed(2));
+        label.setAttribute('y', (anchor.azAt[1] + size * 1.75 * unit).toFixed(2));
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('font-size', (size * unit).toFixed(3));
+        label.style.strokeWidth = `${(3.2 * unit).toFixed(3)}px`;
+      }
+      scale();
+      tools?.querySelector('[data-act="out"]')?.toggleAttribute('disabled', view.k <= 1.001);
+      tools?.querySelector('[data-act="in"]')?.toggleAttribute('disabled', view.k >= most - 0.01);
+      clearTimeout(clashTimer);
+      clashTimer = setTimeout(clashes, 90);
+      figure.dispatchEvent(new CustomEvent('az-moved'));
+    }
+
+    /** Names written beside their marks, each kept off those already written, top first. */
+    function clashes() {
+      const taken = [];
+      const shown = labels.filter((label) => {
+        const of = nodeOf.get(label.dataset.for);
+        const on = of && !of.classList.contains('az-off') && !of.classList.contains('az-grouped');
+        label.classList.toggle('az-off', !on);
+        return on;
+      });
+      shown.sort((a, b) => Number(a.getAttribute('y')) - Number(b.getAttribute('y')));
+      for (const label of shown) {
+        label.classList.remove('az-clash');
+        const at = label.getBoundingClientRect();
+        if (!at.width) continue;
+        const hit = taken.some((one) => at.left < one.right && one.left < at.right && at.top < one.bottom && one.top < at.bottom);
+        label.classList.toggle('az-clash', hit);
+        if (!hit) taken.push(at);
+      }
+    }
+
+    /* the scale: a round distance about a hundred pixels long, at the map's middle, unless the map takes it away */
+    const ruler = data.scale === 'off' ? null : make('div', { class: 'az-map-scale', 'aria-hidden': 'true' });
+    if (ruler) stage.append(ruler);
+    function scale() {
+      if (!ruler) return;
+      const { w, h } = size();
+      const unit = 1 / (fit() * view.k);
+      const mid = [(-view.x + w / 2) * unit, (-view.y + h / 2) * unit];
+      const lat = (Math.atan(Math.sinh(Math.PI * (1 - 2 * (y0 + (mid[1] / H) * spanY)))) * 180) / Math.PI;
+      const metres = 40075016.7 * Math.cos((lat * Math.PI) / 180) * (spanX / W) * unit;
+      let length = 1;
+      for (const step of [1, 2, 5]) for (let power = 0; power < 8; power += 1) {
+        const value = step * 10 ** power;
+        if (value / metres <= 110 && value > length) length = value;
+      }
+      ruler.style.width = `${Math.round(length / metres)}px`;
+      ruler.textContent = length >= 1000 ? `${length / 1000} km` : `${length} m`;
+    }
+
+    /** Zoom by `factor` about a point of the stage, its middle by default. */
+    function zoom(factor, at, smooth = true) {
+      const { w, h } = size();
+      const to = Math.min(most, Math.max(1, view.k * factor));
+      const p = at || { x: w / 2, y: h / 2 };
+      const target = { k: to, x: p.x - ((p.x - view.x) * to) / view.k, y: p.y - ((p.y - view.y) * to) / view.k };
+      if (smooth) fly(target, 260); else { Object.assign(view, target); paint(); }
+    }
+    let flight = 0;
+    /** Move to `{k, x, y}` over `ms`, the zoom eased in its own scale. */
+    function fly(target, ms = 900) {
+      cancelAnimationFrame(flight);
+      const from = { ...view };
+      if (reduced.matches || ms <= 0) { Object.assign(view, target); paint(); return; }
+      stage.classList.add('az-moving');
+      const start = performance.now();
+      const frame = (now) => {
+        const t = Math.min(1, (now - start) / ms);
+        const e = ease(t);
+        const k = from.k * (target.k / from.k) ** e;
+        // the point under the middle travels in a straight line while the zoom changes
+        const { w, h } = size();
+        const fromMid = { x: (w / 2 - from.x) / from.k, y: (h / 2 - from.y) / from.k };
+        const toMid = { x: (w / 2 - target.x) / target.k, y: (h / 2 - target.y) / target.k };
+        const mid = { x: fromMid.x + (toMid.x - fromMid.x) * e, y: fromMid.y + (toMid.y - fromMid.y) * e };
+        Object.assign(view, { k, x: w / 2 - mid.x * k, y: h / 2 - mid.y * k });
+        paint();
+        if (t < 1) flight = requestAnimationFrame(frame);
+        else stage.classList.remove('az-moving');
+      };
+      flight = requestAnimationFrame(frame);
+    }
+    /** Where a view of the map engine's (`{center, zoom}`) puts the stage. */
+    function placed(target) {
+      const { w, h } = size();
+      const z0 = Math.log2(span().w / (512 * spanX));
+      const k = Math.min(most, Math.max(1, 2 ** ((Number(target?.zoom) || z0) - z0)));
+      const [cx, cy] = target?.center ? project(target.center[0], target.center[1]) : [W / 2, H / 2];
+      const f = fit();
+      return { k, x: w / 2 - cx * f * k, y: h / 2 - cy * f * k };
+    }
+
+    /* the tools: the zoom, and apart under it the whole screen */
+    const tools = make('div', { class: 'az-map-tools' });
+    const tool = (act, text, label) => make('button', { type: 'button', 'data-act': act, title: label, 'aria-label': label }, text);
+    const zooms = make('div', { class: 'az-map-zoom' });
+    zooms.append(tool('in', '+', 'Zoom in'), tool('out', '−', 'Zoom out'), tool('fit', '⤢', 'The whole map'));
+    const screenButton = tool('full', '', '');
+    const icon = doc.createElementNS(svg.namespaceURI, 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.append(doc.createElementNS(svg.namespaceURI, 'path'));
+    screenButton.append(icon);
+    const screens = make('div', { class: 'az-map-screen' });
+    screens.append(screenButton);
+    tools.append(zooms, screens);
+    stage.append(tools);
+    tools.addEventListener('click', (event) => {
+      const act = event.target.closest('button')?.dataset.act;
+      if (act === 'in') zoom(2);
+      else if (act === 'out') zoom(0.5);
+      else if (act === 'fit') fly(whole(), 600);
+      else if (act === 'full') screen();
+      event.stopPropagation();
+    });
+    const hint = make('div', { class: 'az-map-hint', 'aria-hidden': 'true' }, `${/Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘' : 'Ctrl'} + scroll to zoom the map`);
+    stage.append(hint);
+    let hinted = 0;
+    stage.addEventListener('wheel', (event) => {
+      // on the whole screen there is no page to scroll: the wheel zooms
+      if (!(event.ctrlKey || event.metaKey || full)) {
+        clearTimeout(hinted);
+        hint.classList.add('az-on');
+        hinted = setTimeout(() => hint.classList.remove('az-on'), 1300);
+        return;
+      }
+      event.preventDefault();
+      const at = stage.getBoundingClientRect();
+      zoom(event.deltaY < 0 ? 1.25 : 0.8, { x: event.clientX - at.left, y: event.clientY - at.top }, false);
+    }, { passive: false });
+    stage.addEventListener('dblclick', (event) => {
+      if (event.target.closest('.az-map-tools')) return;
+      const at = stage.getBoundingClientRect();
+      zoom(event.shiftKey ? 0.5 : 2, { x: event.clientX - at.left, y: event.clientY - at.top });
+    });
+
+    /* a drag moves the map, two fingers zoom it; a press that did not move picks what is under it */
+    const held = new Map();
+    let pinch = null;
+    let moved = 0;
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || event.target.closest('.az-map-tools, .az-map-card')) return;
+      held.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      moved = 0;
+      if (held.size === 2) {
+        const [a, b] = [...held.values()];
+        pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), k: view.k };
+      }
+    });
+    stage.addEventListener('pointermove', (event) => {
+      const last = held.get(event.pointerId);
+      if (!last) return;
+      const dx = event.clientX - last.x;
+      const dy = event.clientY - last.y;
+      held.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 4 && !stage.hasPointerCapture?.(event.pointerId)) stage.setPointerCapture?.(event.pointerId);
+      if (held.size === 2 && pinch) {
+        const [a, b] = [...held.values()];
+        const at = stage.getBoundingClientRect();
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        zoom((pinch.k * (d / pinch.d)) / view.k, { x: (a.x + b.x) / 2 - at.left, y: (a.y + b.y) / 2 - at.top }, false);
+        return;
+      }
+      if (view.k <= 1.001) return;
+      stage.classList.add('az-held');
+      view.x += dx;
+      view.y += dy;
+      paint();
+      event.preventDefault();
+    });
+    const release = (event) => {
+      held.delete(event.pointerId);
+      if (held.size < 2) pinch = null;
+      if (!held.size) stage.classList.remove('az-held');
+    };
+    stage.addEventListener('pointerup', (event) => {
+      const tap = held.has(event.pointerId) && moved <= 4 && held.size === 1;
+      release(event);
+      if (!tap) return;
+      const crowd = event.target.closest?.('.az-bubble');
+      const shape = event.target.closest?.('.az-f');
+      if (crowd) into(crowd.azIds || []);
+      else if (shape && !shape.classList.contains('az-off')) open(shape.dataset.id, shape);
+      else if (!event.target.closest('.az-map-card')) close();
+    });
+    stage.addEventListener('pointercancel', release);
+    stage.addEventListener('keydown', (event) => {
+      const shape = event.target.closest?.('.az-f');
+      const crowd = event.target.closest?.('.az-bubble');
+      if ((shape || crowd) && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        if (crowd) into(crowd.azIds || []); else open(shape.dataset.id, shape);
+        return;
+      }
+      if (event.target !== stage && !shape && !crowd) return;
+      const moves = { ArrowLeft: [80, 0], ArrowRight: [-80, 0], ArrowUp: [0, 80], ArrowDown: [0, -80] };
+      const factors = { '+': 2, '=': 2, '-': 0.5, 0: 0 };
+      if (Object.hasOwn(factors, event.key)) {
+        if (factors[event.key]) zoom(factors[event.key]); else fly(whole(), 500);
+      } else if (moves[event.key] && view.k > 1.001) {
+        fly({ k: view.k, x: view.x + moves[event.key][0], y: view.y + moves[event.key][1] }, 220);
+      } else if (event.key === 'Escape' && picked) close();
+      else return;
+      event.preventDefault();
+    });
+
+    /* a feature's card */
+    const card = make('div', { class: 'az-map-card', role: 'dialog', hidden: '' });
+    stage.parentNode.append(card);
+    card.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.stopPropagation(); close(); } });
+    function link(label, href, extra = {}) {
+      const anchor = make('a', { href, ...extra }, label);
+      if (!href.startsWith('#')) { anchor.target = '_blank'; anchor.rel = 'noopener noreferrer'; }
+      return make('li', {}).appendChild(anchor).parentNode;
+    }
+    function open(id, from) {
+      const feature = byId.get(id);
+      if (!feature) return;
+      const said = feature.card || {};
+      picked?.classList.remove('az-picked');
+      picked = nodeOf.get(id) || null;
+      picked?.classList.add('az-picked');
+      engine?.pick(id);
+      opener = from || (engine ? null : picked);
+      card.replaceChildren();
+      card.setAttribute('aria-label', said.title || feature.label || 'Feature');
+      const shut = make('button', { type: 'button', class: 'az-map-card-close', 'aria-label': 'Close' }, '×');
+      shut.addEventListener('click', () => close());
+      card.append(shut);
+      const media = said.media;
+      if (media?.src) {
+        const holder = make('figure', { class: 'az-map-card-media' });
+        const picture = make('img', { src: media.src, alt: media.alt || said.title || '', decoding: 'async' });
+        if (media.type === 'video' && said.source?.url) {
+          const watch = make('a', { class: 'az-watch', href: said.source.url, target: '_blank', rel: 'noopener noreferrer' });
+          watch.append(picture, make('span', { class: 'az-watch-words' }, 'Watch'));
+          holder.append(watch);
+        } else holder.append(picture);
+        card.append(holder);
+      }
+      const body = make('div', { class: 'az-map-card-body' });
+      const kicker = make('p', { class: 'az-map-card-kicker' });
+      const dot = make('i', { 'aria-hidden': 'true' });
+      dot.style.background = feature.style?.color || 'var(--az-accent)';
+      kicker.append(dot, document.createTextNode(said.kicker || feature.layer || ''));
+      body.append(kicker, make('p', { class: 'az-map-card-title', dir: 'auto' }, said.title || feature.label || 'Feature'));
+      if (said.day) body.append(make('p', { class: 'az-map-card-day' }, said.day));
+      if (said.facts) body.append(make('p', { class: 'az-map-card-facts' }, said.facts));
+      // its words, then each `label: value` line and column it carries as a row, a long run folded
+      const words = make('div', { class: 'az-map-card-words' });
+      if (said.text) words.append(linked(make('p', { class: 'az-map-card-text', dir: 'auto' }), said.text));
+      if (said.rows?.length) {
+        const rows = make('dl', { class: 'az-map-card-rows' });
+        for (const row of said.rows) {
+          const line = make('div');
+          line.append(make('dt', { dir: 'auto' }, row.label), linked(make('dd', { dir: 'auto' }), row.value));
+          rows.append(line);
+        }
+        words.append(rows);
+      }
+      if (said.history?.length) {
+        const history = make('ol', { class: 'az-map-card-history', 'aria-label': 'Over time' });
+        for (const one of said.history) history.append(make('li', {}, one.status ? `${one.day}: ${one.status}` : one.day));
+        words.append(history);
+      }
+      if (words.children.length) {
+        body.append(words);
+        if ((said.text || '').length + (said.rows || []).reduce((sum, row) => sum + row.label.length + row.value.length, 0) > 360) {
+          words.classList.add('az-long');
+          const more = make('button', { type: 'button', class: 'az-map-card-more' }, 'Read all');
+          more.addEventListener('click', () => { words.classList.remove('az-long'); more.remove(); });
+          body.append(more);
+        }
+      }
+      if (said.at || said.size) {
+        const where = make('p', { class: 'az-map-card-where' }, said.at ? `${said.at[0].toFixed(5)}, ${said.at[1].toFixed(5)}` : said.size);
+        if (said.at) where.title = 'Latitude, longitude';
+        body.append(where);
+      }
+      const links = make('ul', { class: 'az-map-card-links' });
+      if (said.proof?.figure) {
+        const item = link(`See ${said.proof.name || 'the proof'} ↓`, said.proof.figure, { class: 'az-map-card-proof' });
+        // the proof is in the page: the screen is given back first
+        item.firstChild.addEventListener('click', (event) => { event.preventDefault(); screen(false).then(() => requestAnimationFrame(() => go(said.proof.figure))); });
+        links.append(item);
+      } else if (said.proof?.posted) links.append(link('Posted proof ↗', said.proof.posted, { class: 'az-map-card-proof' }));
+      if (said.source?.url) links.append(link(`Source: ${said.source.label || 'web'} ↗`, said.source.url));
+      for (const more of said.links || []) links.append(link(`${more.label} ↗`, more.url));
+      for (const check of said.verify || []) links.append(link(`${check.label} ↗`, check.url));
+      if (links.children.length) body.append(links);
+      if (said.credit) body.append(make('p', { class: 'az-map-card-credit' }, said.credit));
+      card.append(body);
+      card.hidden = false;
+      card.scrollTop = 0;
+      shut.focus({ preventScroll: true });
+    }
+    /** Words written into `node`, each web address in them a link of its own. */
+    function linked(node, text) {
+      let at = 0;
+      for (const found of String(text).matchAll(/https?:\/\/[^\s<>"'`]+/g)) {
+        const address = found[0].replace(/[.,;:!?)\]}>'"]+$/, '');
+        if (found.index > at) node.append(text.slice(at, found.index));
+        node.append(make('a', { href: address, target: '_blank', rel: 'noopener noreferrer' }, address));
+        at = found.index + address.length;
+      }
+      if (at < text.length) node.append(text.slice(at));
+      return node;
+    }
+    function close() {
+      if (card.hidden) return;
+      card.hidden = true;
+      picked?.classList.remove('az-picked');
+      picked = null;
+      engine?.pick(null);
+      if (opener?.isConnected && opener.focus && !opener.classList.contains('az-off')) opener.focus({ preventScroll: true });
+      opener = null;
+    }
+
+    /* the days */
+    function setDay(day, { quiet = false } = {}) {
+      currentDay = day;
+      const latest = new Map();
+      for (const node of shapes) {
+        const on = (!node.dataset.from || node.dataset.from <= day) && (!node.dataset.until || day <= node.dataset.until)
+          && !hidden.has(node.dataset.id);
+        node.classList.toggle('az-hidden', hidden.has(node.dataset.id));
+        const was = !node.classList.contains('az-off');
+        node.classList.toggle('az-off', !on);
+        node.classList.remove('az-past');
+        if (on && !was && !quiet && !reduced.matches) {
+          node.classList.remove('az-new');
+          void node.getBBox?.();
+          node.classList.add('az-new');
+          setTimeout(() => node.classList.remove('az-new'), 1500);
+        }
+        if (!on && !hidden.has(node.dataset.id) && node.dataset.until && node.dataset.until < day && node.dataset.of && !node.classList.contains('az-point')) {
+          const before = latest.get(node.dataset.of);
+          if (!before || before.dataset.until < node.dataset.until) latest.set(node.dataset.of, node);
+        }
+      }
+      // where a line or an area last stood, faint: under where it stands now, or alone once it is gone
+      for (const node of latest.values()) node.classList.add('az-past');
+      // a name goes with its mark at once; which names clash is read once the map settles
+      for (const label of labels) label.classList.toggle('az-off', nodeOf.get(label.dataset.for)?.classList.contains('az-off') ?? true);
+      if (picked?.classList.contains('az-off')) close();
+      if (slider) {
+        const index = Math.max(0, days.indexOf(day));
+        slider.value = String(index);
+        slider.setAttribute('aria-valuetext', longDay(day));
+        slider.style.setProperty('--at', `${days.length > 1 ? (index / (days.length - 1)) * 100 : 100}%`);
+        nowDay.textContent = longDay(day, 'short');
+        nowCount.textContent = `Day ${index + 1} of ${days.length}`;
+      }
+      if (engine) engine.day(day, { quiet });
+      else paint();
+    }
+    let slider = null;
+    /**
+     * The ticks that name a day or a month: each says it only where it has room after the last one
+     * that does, and one at an end of the track is set inside it rather than across its edge.
+     */
+    let named = [];
+    function months() {
+      const across = named[0]?.parentNode.clientWidth;
+      if (!across) return;
+      let end = -Infinity;
+      for (const tick of named) {
+        const middle = (Number.parseFloat(tick.style.left) / 100) * across;
+        const half = tick.dataset.month.length * 3.4;
+        const first = middle - half < -8;
+        const last = !first && middle + half > across + 8;
+        const left = first ? middle : last ? middle - 2 * half : middle - half;
+        tick.classList.toggle('az-start', first);
+        tick.classList.toggle('az-end', last);
+        tick.classList.toggle('az-unnamed', left < end + 6);
+        if (left >= end + 6) end = left + 2 * half;
+      }
+    }
+    let nowDay = null;
+    let nowCount = null;
+    let playing = 0;
+    const after = figure.querySelector('.az-map-day') || stage.parentNode;
+    if (days.length > 1 && data.timeline !== false) {
+      const time = make('div', { class: 'az-map-time' });
+      const play = make('button', { type: 'button', class: 'az-map-play', 'aria-label': 'Play the days' }, '▶');
+      const now = make('div', { class: 'az-map-now', 'aria-live': 'polite' });
+      nowDay = make('span', { class: 'az-map-now-day' });
+      nowCount = make('span', { class: 'az-map-now-count' });
+      now.append(nowDay, nowCount);
+      const track = make('div', { class: 'az-map-track' });
+      slider = make('input', { type: 'range', min: '0', max: String(days.length - 1), step: '1', 'aria-label': 'Day shown on the map' });
+      const ticks = make('ol', { class: 'az-map-ticks', 'aria-hidden': 'true' });
+      // a few days are each named; more, each month where it starts
+      const few = days.length <= 8;
+      let month = '';
+      let lastLabel = -100;
+      days.forEach((day, index) => {
+        const at = (index / (days.length - 1)) * 100;
+        const tick = make('li');
+        tick.style.left = `${at}%`;
+        const named = day.slice(0, 7);
+        if (few || (named !== month && at - lastLabel > 9)) {
+          tick.dataset.month = few ? longDay(day, 'short').replace(/ \d{4}$/, '') : longDay(day, 'short').replace(/^\d+ /, '');
+          lastLabel = at;
+        }
+        month = named;
+        if (days.length <= 120 || tick.dataset.month) ticks.append(tick);
+      });
+      track.append(slider, ticks);
+      named = all('li[data-month]', ticks);
+      time.append(play, now, track);
+      after.after(time);
+      slider.addEventListener('input', () => { stop(); setDay(days[Number(slider.value)] || currentDay); });
+      const stop = () => {
+        clearInterval(playing);
+        playing = 0;
+        play.textContent = '▶';
+        play.setAttribute('aria-label', 'Play the days');
+      };
+      play.addEventListener('click', () => {
+        if (playing) { stop(); return; }
+        let index = days.indexOf(currentDay);
+        if (index >= days.length - 1) index = -1;
+        play.textContent = '❚❚';
+        play.setAttribute('aria-label', 'Pause');
+        const next = () => {
+          index += 1;
+          setDay(days[index]);
+          if (index >= days.length - 1) stop();
+        };
+        next();
+        playing = setInterval(next, Number(data.speed) || 1100);
+      });
+    }
+
+    /* a map's own steps: where it looks and on which day */
+    const steps = data.steps || [];
+    let stepButtons = [];
+    let stepRow = null;
+    let stepSaid = null;
+    function step(index, { smooth = true, card: show = false } = {}) {
+      const chosen = steps[index];
+      if (!chosen) return;
+      if (chosen.day && days.includes(chosen.day)) setDay(chosen.day);
+      else if (chosen.day && days.length) setDay(days.filter((day) => day <= chosen.day).pop() || days[0]);
+      if (engine) engine.look(chosen.view, { smooth, focus: chosen.focus || [] });
+      else fly(placed(chosen.view), smooth ? 1300 : 0);
+      stepButtons.forEach((button, i) => (i === index ? button.setAttribute('aria-current', 'step') : button.removeAttribute('aria-current')));
+      // the step's own words under the row: its name, then what it says
+      if (stepSaid) {
+        stepSaid.replaceChildren();
+        if (chosen.text && chosen.label) stepSaid.append(make('b', {}, chosen.label), ' ', chosen.text);
+        else if (chosen.text) stepSaid.append(chosen.text);
+      }
+      const current = stepButtons[index];
+      if (current && stepRow && stepRow.scrollWidth > stepRow.clientWidth) {
+        stepRow.scrollTo?.({ left: current.offsetLeft - stepRow.clientWidth / 2 + current.offsetWidth / 2, behavior: motion() });
+      }
+      for (const id of chosen.focus || []) {
+        const node = nodeOf.get(id);
+        node?.classList.add('az-new');
+        setTimeout(() => node?.classList.remove('az-new'), 1500);
+      }
+      // a step about one feature says what it is: its card opens
+      if (show && chosen.focus?.length) open(chosen.focus[0]);
+      else if (show) close();
+    }
+    if (steps.length) {
+      stepRow = make('ol', { class: 'az-map-steps', 'aria-label': 'Where the map looks' });
+      stepButtons = steps.map((one, index) => {
+        const said = one.label || (one.day ? longDay(one.day, 'short').replace(/ \d{4}$/, '') : `Step ${index + 1}`);
+        const button = make('button', { type: 'button', title: one.text || one.label || said });
+        button.append(make('b', {}, String(index + 1)), make('span', {}, said));
+        button.addEventListener('click', () => step(index, { card: true }));
+        const item = make('li');
+        item.append(button);
+        stepRow.append(item);
+        return button;
+      });
+      const row = make('div', { class: 'az-map-steps-row' });
+      row.append(stepRow);
+      (figure.querySelector('.az-map-time') || after).after(row);
+      stepSaid = make('p', { class: 'az-map-step-said', 'aria-live': 'polite' });
+      row.after(stepSaid);
+      // a row longer than the map fades at the edge it goes on past
+      const edges = () => {
+        const more = stepRow.scrollWidth - stepRow.clientWidth;
+        row.classList.toggle('az-fade-start', more > 1 && stepRow.scrollLeft > 2);
+        row.classList.toggle('az-fade-end', more > 1 && stepRow.scrollLeft < more - 2);
+      };
+      stepRow.addEventListener('scroll', edges, { passive: true });
+      window.addEventListener('resize', edges);
+      requestAnimationFrame(edges);
+    }
+
+    const settle = () => {
+      // as deep as the ground stays sharp: each of its pixels drawn at most two and a half wide; a ground
+      // laid on part of a map framed otherwise is as wide as the share of the stage it covers
+      const groundShare = Number.parseFloat(ground?.style.width || '') / 100 || 1;
+      most = Math.max(3, Math.min(24, ((ground?.naturalWidth || W * 2) / (groundShare * span().w)) * 2.5));
+      for (const detail of details) {
+        const share = Number.parseFloat(detail.style.width) / 100;
+        if (share > 0 && detail.naturalWidth) most = Math.max(most, Math.min(48, (detail.naturalWidth / (share * span().w)) * 2.5));
+      }
+      paint();
+    };
+    /** The stage sized again: the world grows with it, the point at its middle kept there. */
+    function refit() {
+      if (laid) {
+        const { w, h } = size();
+        const f = fit() * view.k;
+        view.x = w / 2 - laid.x * f;
+        view.y = h / 2 - laid.y * f;
+      }
+      settle();
+      months();
+    }
+    window.addEventListener('resize', refit);
+
+    /* the whole screen: the figure takes it, its timeline, steps, legend and cards with it. Where the
+       browser gives none to a part of the page (Safari on an iPhone, a frame that may not), the figure
+       covers the window instead, the page held still under it and found where it was after */
+    /** Where the page was when the figure took the screen, found there again after. */
+    let wasAt = null;
+    /** While the figure covers the window itself: each box round it, lifted over the rest of the page. */
+    let covered = null;
+    const escaped = (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      screen(false);
+    };
+    /** Take the whole screen, give it back (`on` false), or the other of the two; settles once it has. */
+    function screen(on) {
+      if (paged) return pageScreen(on);
+      if (on === undefined) on = !full;
+      if (on === full) return Promise.resolve();
+      if (!on) {
+        if (covered) uncover();
+        return doc.fullscreenElement === figure ? doc.exitFullscreen().catch(() => {}) : Promise.resolve();
+      }
+      wasAt = { x: window.scrollX, y: window.scrollY };
+      if (figure.requestFullscreen && doc.fullscreenEnabled !== false) return figure.requestFullscreen().catch(cover);
+      cover();
+      return Promise.resolve();
+    }
+    function cover() {
+      if (full) return;
+      covered = { lifted: [] };
+      for (let node = figure.parentElement; node && node !== doc.body; node = node.parentElement) {
+        covered.lifted.push([node, node.style.zIndex]);
+        node.style.zIndex = '2147483000';
+      }
+      root.classList.add('az-locked');
+      figure.classList.add('az-overlay');
+      changed(true);
+    }
+    function uncover() {
+      const { lifted } = covered;
+      covered = null;
+      for (const [node, value] of lifted) node.style.zIndex = value;
+      root.classList.remove('az-locked');
+      figure.classList.remove('az-overlay');
+      changed(false);
+    }
+    /** A map page holds its window already: the whole screen is the browser's own, for the whole page. */
+    function pageScreen(on = !doc.fullscreenElement) {
+      if (on && !doc.fullscreenElement && root.requestFullscreen && doc.fullscreenEnabled !== false) return root.requestFullscreen().catch(() => {});
+      if (!on && doc.fullscreenElement) return doc.exitFullscreen().catch(() => {});
+      return Promise.resolve();
+    }
+    /** What the screen buttons say: the drawing's, and the live map's copy of it. */
+    function labelled(button) {
+      const on = paged ? Boolean(doc.fullscreenElement) : full;
+      button.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+      button.title = on ? 'Back to the page (Esc)' : 'The map on the whole screen';
+      button.querySelector('path')?.setAttribute('d', on ? CORNERS.in : CORNERS.out);
+    }
+    /** On the whole screen, what goes with the map in one panel beside it (under it on a phone), in the page's order. */
+    let side = null;
+    function changed(on) {
+      full = on;
+      if (on) {
+        filled();
+        side = make('div', { class: 'az-map-side' });
+        side.append(...[...figure.children].filter((node) => !node.matches('.az-map-frame, script')));
+        figure.append(side);
+      } else if (side) {
+        stage.parentNode.after(...side.children);
+        side.remove();
+        side = null;
+      }
+      figure.classList.toggle('az-full', on);
+      for (const button of all('[data-act="full"]', figure)) labelled(button);
+      window[on ? 'addEventListener' : 'removeEventListener']('keydown', escaped, true);
+      refit();
+      engine?.screen?.(on);
+      // the page under the figure moved while it was away from it: it is found where it was
+      if (!on && wasAt) window.scrollTo(wasAt.x, wasAt.y);
+      if (!on) wasAt = null;
+    }
+    labelled(screenButton);
+    // a map much wider than tall holds the screen's width, what goes with it under it
+    figure.classList.toggle('az-map-wide', W / H >= 2);
+    doc.addEventListener('fullscreenchange', () => {
+      if (paged) {
+        for (const button of all('[data-act="full"]', figure)) labelled(button);
+        return;
+      }
+      const on = doc.fullscreenElement === figure;
+      if (on !== full && !covered) changed(on);
+    });
+    if (ground && !ground.complete) ground.addEventListener('load', settle, { once: true });
+    for (const detail of details) if (!detail.complete) detail.addEventListener('load', settle, { once: true });
+    window.addEventListener('beforeprint', () => { if (!paged) screen(false); close(); Object.assign(view, whole()); paint(); });
+    if (data.opens) Object.assign(view, opening());
+    settle();
+    months();
+    if (currentDay) setDay(currentDay, { quiet: true });
+
+    /** What the stage shows, as `[west, south, east, north]`. */
+    function seen() {
+      const { w, h } = size();
+      const at = (x, y) => {
+        const mx = x0 + ((x - view.x) / (fit() * view.k) / W) * spanX;
+        const my = y0 + ((y - view.y) / (fit() * view.k) / H) * spanY;
+        return [mx * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - 2 * my))) * 180) / Math.PI];
+      };
+      const [west, north] = at(0, 0);
+      const [east, south] = at(w, h);
+      return [west, south, east, north];
+    }
+
+    /** Where the map looks, `{center, zoom}` as the map engine counts them, and the day it shows. */
+    function where() {
+      if (engine?.where) return { ...engine.where(), day: currentDay };
+      const { w, h } = size();
+      const unit = 1 / (fit() * view.k);
+      const mx = x0 + ((-view.x + w / 2) * unit / W) * spanX;
+      const my = y0 + ((-view.y + h / 2) * unit / H) * spanY;
+      const zoom = Math.log2(span().w / (512 * spanX)) + Math.log2(view.k);
+      return { center: [mx * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - 2 * my))) * 180) / Math.PI], zoom, day: currentDay };
+    }
+
+    return {
+      fly: (target, ms) => (engine ? engine.look(target, { smooth: ms !== 0 }) : fly(placed(target), ms)),
+      day: (day) => setDay(day),
+      where,
+      /** Look where `target` says (`{center, zoom}`) at once, the live map too once it takes over. */
+      look(target) {
+        asked = target;
+        if (engine) engine.look(target, { smooth: false }); else fly(placed(target), 0);
+      },
+      /** The features a map page's switcher takes off the map, whatever their days (`ids`, all of them). */
+      hide(ids) {
+        hidden.clear();
+        for (const id of ids || []) hidden.add(String(id));
+        setDay(currentDay, { quiet: true });
+      },
+      /**
+       * Make the map a map page's: its window is the map's own, as on the whole screen (the map whole
+       * in its middle, the wheel and one finger its own), for good; the screen button then asks the
+       * browser's whole screen for the page.
+       */
+      page() {
+        if (paged) return;
+        paged = true;
+        full = true;
+        figure.classList.add('az-paged');
+        filled();
+        for (const button of all('[data-act="full"]', figure)) labelled(button);
+        if (!root.requestFullscreen || doc.fullscreenEnabled === false) screens.hidden = true;
+        refit();
+        // the page's room changes with no resize of the window (its faces loading, its header wrapping): the map follows it
+        if (typeof ResizeObserver === 'function') new ResizeObserver(() => refit()).observe(stage);
+        engine?.screen?.(true);
+      },
+      step,
+      open,
+      close,
+      seen,
+      screen,
+      /** A story's card: its own step, or the whole map as on its last day for the card of words. */
+      story: (index) => {
+        if (index == null || index === '') {
+          if (days.length) setDay(data.day || days[days.length - 1]);
+          if (engine) engine.whole(); else fly(whole(), 1100);
+        } else step(Number(index));
+      },
+      /**
+       * Hand the map to a live one (`{day, look, whole, pick, screen}`, reader.live.js), which from
+       * then on draws it and is moved by the timeline, the steps, the story and the whole screen;
+       * `null` takes it back. The drawing stays under it, out of reach. Answers what the live map
+       * starts from and what it shares with the drawing: the day, the card open, whether the figure
+       * holds the whole screen, how marks are spread and a crowd drawn.
+       */
+      attach(live) {
+        engine = live || null;
+        if (engine && asked) engine.look(asked, { smooth: false });
+        asked = null;
+        stage.inert = Boolean(engine);
+        if (engine) stage.setAttribute('aria-hidden', 'true');
+        else { stage.removeAttribute('aria-hidden'); paint(); }
+        return { day: currentDay, picked: picked?.dataset.id || null, full, arrange, bubble, crowdFrom, paged };
+      },
+    };
+  }
+
+  function maps() {
+    for (const figure of all('figure.az-map')) {
+      let data = null;
+      try { data = JSON.parse(figure.querySelector('script.az-map-data')?.textContent || 'null'); } catch { data = null; }
+      if (data?.features) figure.azMap = mapOf(figure, data);
+    }
+    if (typeof mapPage === 'function') mapPage();
+    online();
+  }
+
+  /* a web folder's maps go live once its page is read over the web: its reader loads reader.live.js,
+     and MapLibre beside it, from the folder (`script#az-gl` names them); each map takes over from its
+     drawing once ready, which stays when it cannot be. A file opened from the disk keeps its drawings */
+  function online() {
+    let said = null;
+    try { said = JSON.parse(doc.getElementById('az-gl')?.textContent || 'null'); } catch { said = null; }
+    const figures = all('figure.az-map').filter((figure) => figure.azMap);
+    if (!said?.module || !figures.length || !/^https?:$/.test(window.location.protocol)) return;
+    quietly(import(new URL(said.module, doc.baseURI).href).then((live) => live.start(figures, said)));
+  }
+  /* a map page (`data-web="map"`, a web map): spliced after the map's part only in such a page
+     (engine/notes_html.py). Its first map takes the window under its title, and a panel beside it
+     (behind a button on a phone) holds a search through the map's features, its layers to switch
+     off and on, its steps and the note's other words; where the map looks is kept in the address
+     (`#zoom/lat/lon`), so a view can be shared. Without script the page reads top to bottom */
+  function mapPage() {
+    if (root.dataset.web !== 'map') return;
+    const page = doc.querySelector('.az-mappage');
+    const figure = page?.querySelector('.az-mappage-main figure.az-map');
+    const map = figure?.azMap;
+    if (!map) return;
+    let data = null;
+    try { data = JSON.parse(figure.querySelector('script.az-map-data')?.textContent || 'null'); } catch { data = null; }
+    const features = data?.features || [];
+    const days = data?.days || [];
+    const shownOn = (feature, day) => !day || ((!feature.from || feature.from <= day) && (!feature.until || day <= feature.until));
+    page.classList.add('az-paged-page');
+    map.page();
+    /* the analyst's logo and handle, in the map's own corner */
+    const mark = page.querySelector('.az-mappage-mark');
+    if (mark) figure.querySelector('.az-map-frame')?.append(mark);
+
+    const panel = make('aside', { class: 'az-mappage-panel', id: 'az-mappage-panel', 'aria-label': 'Layers and search' });
+    /* on a phone the panel is a sheet at the foot of the map, folded down to this bar, which brings it up and folds it again */
+    const bar = make('button', { type: 'button', class: 'az-mappage-fold', 'aria-controls': panel.id, 'aria-expanded': 'false' });
+    bar.append(make('span', { class: 'az-mappage-grip', 'aria-hidden': 'true' }), make('span', { class: 'az-mappage-fold-name' }, 'Layers and search'));
+    const section = (name, ...parts) => {
+      const box = make('section', { class: 'az-mappage-part' });
+      box.append(make('h2', { class: 'az-mappage-label' }, name), ...parts);
+      return box;
+    };
+    panel.append(bar);
+
+    /* the search: every word of a feature, its name, its group and layer, its day and each of its columns */
+    const fold = (text) => String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const sought = new Map(features.map((feature) => {
+      const card = feature.card || {};
+      const parts = [feature.label, card.title, card.kicker, card.text, card.facts, card.day, feature.group, feature.layer,
+        ...(card.rows || []).flatMap((row) => [row.label, row.value])];
+      return [feature.id, fold(parts.filter(Boolean).join('\n'))];
+    }));
+    const field = make('input', { type: 'search', class: 'az-mappage-field', placeholder: 'Name, group, any word…',
+      'aria-label': 'Find a feature on the map', autocomplete: 'off', spellcheck: 'false' });
+    const found = make('p', { class: 'az-mappage-found', 'aria-live': 'polite' });
+    const results = make('ul', { class: 'az-mappage-results' });
+    panel.append(section('Find on the map', field, found, results));
+    /** One result a feature, a feature followed over time once: as on the day shown, else its last state. */
+    function search() {
+      const words = fold(field.value).split(/\s+/).filter(Boolean);
+      results.replaceChildren();
+      found.textContent = '';
+      if (!words.length) return;
+      const day = map.where().day;
+      const kept = new Map();
+      for (const feature of features) {
+        if (!words.every((word) => sought.get(feature.id)?.includes(word))) continue;
+        const of = feature.of || feature.id;
+        const held = kept.get(of);
+        if (!held || (!shownOn(held, day) && (shownOn(feature, day) || String(feature.from || '') > String(held.from || '')))) kept.set(of, feature);
+      }
+      const hits = [...kept.values()];
+      found.textContent = hits.length ? `${hits.length} found` : 'Nothing on the map matches';
+      for (const feature of hits.slice(0, 50)) {
+        const card = feature.card || {};
+        const button = make('button', { type: 'button', class: 'az-mappage-hit' });
+        const dot = make('i', { 'aria-hidden': 'true' });
+        dot.style.background = feature.style?.color || 'var(--az-accent)';
+        button.append(dot, make('span', { class: 'az-mappage-hit-name', dir: 'auto' }, card.title || feature.label || 'Feature'),
+          make('span', { class: 'az-mappage-hit-said', dir: 'auto' }, [card.kicker || feature.layer, card.day].filter(Boolean).join(' · ')));
+        button.addEventListener('click', () => reach(feature));
+        const item = make('li');
+        item.append(button);
+        results.append(item);
+      }
+    }
+    field.addEventListener('input', search);
+    field.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') { event.preventDefault(); results.querySelector('button')?.click(); }
+    });
+
+    /* the layers: the legend, each of its rows a switch for what it stands for, a layer's name for all of its rows */
+    const legend = figure.querySelector('.az-map-legend');
+    figure.querySelector('details.az-map-key')?.setAttribute('open', '');
+    const rows = legend ? all('li[data-key]', legend) : [];
+    const stands = (row, feature) => row.dataset.layer === (feature.layer || '') && row.dataset.key === (feature.group || '')
+      && row.dataset.kind === feature.kind;
+    function apply() {
+      const off = rows.filter((row) => row.classList.contains('az-key-off'));
+      map.hide(features.filter((feature) => off.some((row) => stands(row, feature))).map((feature) => feature.id));
+    }
+    function shown(row, on) {
+      row.classList.toggle('az-key-off', !on);
+      row.querySelector('.az-key-switch')?.setAttribute('aria-pressed', String(on));
+    }
+    for (const row of rows) {
+      const name = row.querySelector('.az-key-name')?.textContent || 'these';
+      const button = make('button', { type: 'button', class: 'az-key-switch', 'aria-pressed': 'true', title: `Show or hide ${name} on the map` });
+      button.append(...row.childNodes);
+      row.append(button);
+      button.addEventListener('click', () => { shown(row, row.classList.contains('az-key-off')); apply(); });
+    }
+    for (const head of legend ? all('.az-key-layer', legend) : []) {
+      const mine = rows.filter((row) => row.dataset.layer === head.textContent);
+      if (!mine.length) continue;
+      const button = make('button', { type: 'button', class: 'az-key-switch az-key-all', title: `Show or hide all of ${head.textContent}` });
+      button.append(...head.childNodes);
+      head.append(button);
+      button.addEventListener('click', () => {
+        const on = mine.every((row) => row.classList.contains('az-key-off'));
+        for (const row of mine) shown(row, on);
+        apply();
+      });
+    }
+    if (legend) panel.append(section('Layers', legend.closest('details.az-map-key') || legend));
+    const steps = figure.querySelector('.az-map-steps-row');
+    if (steps) panel.append(section('Where the map looks', steps));
+    const about = page.querySelector('.az-mappage-about');
+    if (about) panel.append(about);
+    page.append(panel);
+
+    /** Go to a feature found: its switch back on, a day it is on, the map moved to it, its card open. */
+    function reach(feature) {
+      const row = rows.find((one) => stands(one, feature) && one.classList.contains('az-key-off'));
+      if (row) { shown(row, true); apply(); }
+      const at = map.where();
+      if (days.length && !shownOn(feature, at.day)) map.day(days.filter((day) => shownOn(feature, day)).pop() || feature.from || at.day);
+      const coords = feature.kind === 'point' ? feature.coords
+        : feature.at || (feature.kind === 'line' ? feature.coords?.[0]?.[Math.floor((feature.coords[0].length - 1) / 2)] : feature.coords?.[0]?.[0]?.[0]);
+      if (coords) map.fly({ center: coords, zoom: Math.max(at.zoom, 14) });
+      map.open(feature.id);
+      sheet(false);
+    }
+
+    /* the sheet's bar, a phone's only: a column beside the map on a wider screen has nothing to fold */
+    function sheet(on) {
+      page.classList.toggle('az-mappage-open', on);
+      bar.setAttribute('aria-expanded', String(on));
+      if (!on) panel.scrollTop = 0;
+    }
+    /* the bar follows a finger: the sheet comes with it, and once let go, past a short way, it settles the way it was
+       pulled; a press that hardly moved is the bar's press */
+    let drag = null;
+    let dragged = false;
+    bar.addEventListener('pointerdown', (event) => {
+      if (event.button) return;
+      const tall = panel.getBoundingClientRect().height;
+      drag = { id: event.pointerId, y: event.clientY, open: page.classList.contains('az-mappage-open'), by: 0,
+        travel: Math.max(1, tall - bar.offsetHeight) };
+      bar.setPointerCapture?.(event.pointerId);
+    });
+    bar.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      drag.by = event.clientY - drag.y;
+      if (!drag.moved && Math.abs(drag.by) < 6) return;
+      drag.moved = true;
+      const at = Math.min(drag.travel, Math.max(0, (drag.open ? 0 : drag.travel) + drag.by));
+      panel.style.transition = 'none';
+      panel.style.transform = `translateY(${at.toFixed(1)}px)`;
+    });
+    const let_go = (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const was = drag;
+      drag = null;
+      if (!was.moved) return;
+      panel.style.transition = '';
+      panel.style.transform = '';
+      dragged = true;
+      setTimeout(() => { dragged = false; }, 0);
+      sheet(Math.abs(was.by) > 40 ? was.by < 0 : was.open);
+    };
+    bar.addEventListener('pointerup', let_go);
+    bar.addEventListener('pointercancel', let_go);
+    bar.addEventListener('click', () => { if (!dragged) sheet(!page.classList.contains('az-mappage-open')); });
+    panel.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && page.classList.contains('az-mappage-open')) { event.stopPropagation(); sheet(false); bar.focus({ preventScroll: true }); }
+    });
+
+    /* where the map looks, in the address: read on the way in, written as it moves, never a step of the history. Its
+       zoom is a tile's, as OpenStreetMap's and the app's own addresses write it: one more than the map engine's */
+    const asked = /^#(\d{1,2}(?:\.\d+)?)\/(-?\d{1,2}(?:\.\d+)?)\/(-?\d{1,3}(?:\.\d+)?)$/.exec(location.hash);
+    if (asked) {
+      const [zoom, lat, lon] = asked.slice(1).map(Number);
+      if (zoom >= 1 && zoom <= 23 && Math.abs(lat) <= 85 && Math.abs(lon) <= 180) map.look({ center: [lon, lat], zoom: zoom - 1 });
+    }
+    const first = map.where();
+    let writing = 0;
+    figure.addEventListener('az-moved', () => {
+      clearTimeout(writing);
+      writing = setTimeout(() => {
+        const at = map.where();
+        const still = Math.abs(at.zoom - first.zoom) < 0.01 && Math.abs(at.center[0] - first.center[0]) < 1e-5
+          && Math.abs(at.center[1] - first.center[1]) < 1e-5;
+        if (!ownAddress() || (still && !location.hash)) return;
+        const hash = `#${(at.zoom + 1).toFixed(2)}/${at.center[1].toFixed(5)}/${at.center[0].toFixed(5)}`;
+        if (location.hash === hash) return;
+        try { history.replaceState(null, '', hash); } catch { /* a page that may not change its address keeps it */ }
+      }, 400);
+    });
+  }
+
+  /* the story layout opens on its first picture when the cover has none of its own: the first that
+     came from somewhere (it has a credit) rather than a chart, else the first; its credit kept on it */
+  function hero() {
+    const cover = doc.querySelector('.az-cover:not([data-cover="own"])');
+    if (!story || !cover || cover.querySelector('.az-cover-figure')) return;
+    const figures = all('.az-body .az-figure:is([data-kind="picture"], [data-kind="proof"]):not(.az-graphic)');
+    const figure = figures.find((one) => one.querySelector('.az-credit')) || figures[0];
+    const image = figure?.querySelector('.az-zoom > img');
+    if (!image) return;
+    const held = make('figure', { class: 'az-figure az-cover-figure', 'data-kind': 'picture', 'data-borrowed': 'true' });
+    held.append(make('img', { src: image.getAttribute('src'), alt: '' }));
+    const credit = figure.querySelector('.az-credit');
+    if (credit) {
+      const caption = make('figcaption');
+      caption.append(credit.cloneNode(true));
+      for (const node of all('[id]', caption)) node.removeAttribute('id');
+      held.append(caption);
+    }
+    cover.append(held);
+  }
+
+  /** The hyphenated words of `node` matching `word` kept whole on their line. */
+  function keepWhole(node, word) {
+    const texts = [];
+    const walker = doc.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) texts.push(text);
+    for (const text of texts) {
+      const parts = text.data.split(word);
+      if (parts.length > 1) text.replaceWith(...parts.map((part, index) => (index % 2 ? make('span', { class: 'az-keep' }, part) : part)));
+    }
+  }
+
+  /* a title never breaks right after a hyphen: "al-Mandab" stays whole on its line, and so does "M-ATV" or "0:23-0:37" in a table */
+  function titles() {
+    for (const heading of all('.az-title, .az-body h2, .az-body h3, .az-contents a')) keepWhole(heading, /(\S{1,24}-\S{1,24})/);
+    for (const cell of all('.az-table td')) keepWhole(cell, /(\S{1,14}-\S{1,14})/);
+    // an address written out breaks anywhere, rather than leave a justified line stretched before it
+    for (const link of all('.az-body :is(p, li) a')) if (/^\S{28,}$/.test(words(link))) link.classList.add('az-long');
+  }
+
+  /* printed, every fold is open: where a picture comes from, how a proof was checked */
+  function printing() {
+    let opened = [];
+    window.addEventListener('beforeprint', () => {
+      opened = all('details:not([open])');
+      for (const details of opened) details.open = true;
+      for (const clip of all('video')) clip.pause?.();
+    });
+    window.addEventListener('afterprint', () => {
+      for (const details of opened) details.open = false;
+      opened = [];
+    });
+  }
+
+  function start() {
+    for (const part of [titles, hero, progress, contents, pictures, pairs, timecodes, tables, citations, steps, ...(typeof maps === 'function' ? [maps] : []), stories, printing, addresses]) part();
+  }
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
+})();

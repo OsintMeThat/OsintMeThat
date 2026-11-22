@@ -6,6 +6,18 @@
  },
  "articles": [
   {
+   "address": "/yemen/",
+   "title": "YEMEN",
+   "summary": "",
+   "date": "2026-11-22",
+   "date_label": "22 November 2026",
+   "category": "Conflict Watch",
+   "author": "MPGeoint",
+   "layout": "map",
+   "image": "/yemen/cover.jpg",
+   "maps": []
+  },
+  {
    "address": "/bab-el-mandab-2026/",
    "title": "The fall of the Bab al-Mandab front, Sep-Nov 2026",
    "summary": "On 9 October 2026, Saudi Arabia's ambassador to Yemen wrote on X that Bab al-Mandab had been \"cleared of the remnants of the Houthi militia\" (his post, 9 Oct), as AFP reported the next day (AFP via…",
@@ -85,6 +97,18 @@
   }
  ],
  "maps": [
+  {
+   "address": "/yemen/",
+   "title": "YEMEN",
+   "summary": "",
+   "date": "2026-11-22",
+   "date_label": "22 November 2026",
+   "category": "Conflict Watch",
+   "author": "MPGeoint",
+   "layout": "map",
+   "image": "/yemen/cover.jpg",
+   "article": null
+  },
   {
    "address": "/bab-el-mandab-2026-map/",
    "title": "The Bab al-Mandab front on one map",

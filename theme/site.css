@@ -82,7 +82,12 @@ code { font-family: var(--mono); font-size: 0.88em; }
 /* Lists Azimut fills: the newest article large, the others as cards */
 .latest { padding: 60px 0 64px; }
 .az-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 34px 28px; }
-.az-item { min-width: 0; }
+.az-item { min-width: 0; position: relative; }
+/* The map an article cites, over its cover's bottom right corner: the cards below the newest show no links.
+   A margin in % counts the width, so 52.5% is the height of a 1200 / 630 cover. */
+.az-onmap { position: absolute; top: 0; right: 10px; margin-top: calc(52.5% - 10px); transform: translateY(-100%); z-index: 1; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 8px; border-radius: 3px; background: rgba(12, 16, 22, .8); color: #fff; font-size: 12px; font-weight: 650; line-height: 1; text-transform: uppercase; letter-spacing: .07em; text-decoration: none; }
+.az-onmap:hover, .az-onmap:focus-visible { background: var(--teal); color: #fff; }
+.az-onmap:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .az-cover { display: block; margin: 0 0 13px; border-radius: 3px; overflow: hidden; background: var(--mist); aspect-ratio: 1200 / 630; }
 .az-cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
 .az-item:hover .az-cover img { transform: scale(1.02); }
@@ -99,6 +104,7 @@ code { font-family: var(--mono); font-size: 0.88em; }
 }
 .az-list:not(.az-maps) > .az-item:first-child > * { grid-column: 2; }
 .az-list:not(.az-maps) > .az-item:first-child .az-cover { grid-column: 1; grid-row: 1 / -1; margin: 0; border-radius: 4px; }
+.az-list:not(.az-maps) > .az-item:first-child .az-onmap { grid-column: 1 / 2; grid-row: 1 / -1; right: 14px; margin-top: calc(52.5% - 14px); padding: 8px 13px 8px 11px; font-size: 13px; }
 .az-list:not(.az-maps) > .az-item:first-child .az-category { grid-row: 2; }
 .az-list:not(.az-maps) > .az-item:first-child .az-title { grid-row: 3; font-size: 36px; line-height: 1.1; letter-spacing: -0.022em; text-wrap: balance; margin-bottom: 10px; }
 .az-list:not(.az-maps) > .az-item:first-child .az-meta { grid-row: 4; }
@@ -396,6 +402,8 @@ code { font-family: var(--mono); font-size: 0.88em; }
   .az-list { grid-template-columns: 1fr; gap: 0; }
   .az-list:not(.az-maps) > .az-item:not(:first-child) { display: grid; grid-template-columns: 112px 1fr; column-gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
   .az-list:not(.az-maps) > .az-item:not(:first-child) .az-cover { grid-row: 1 / span 4; margin: 0; align-self: start; }
+  .az-list:not(.az-maps) > .az-item:not(:first-child) .az-onmap { grid-column: 1 / 2; grid-row: 1 / span 4; right: 5px; margin-top: calc(52.5% - 5px); padding: 5px; }
+  .az-list:not(.az-maps) > .az-item:not(:first-child) .az-onmap span { display: none; }
   .az-list:not(.az-maps) > .az-item:first-child .az-title { font-size: 27px; }
   .az-maps { gap: 24px; }
   .tool h2 { font-size: 29px; }

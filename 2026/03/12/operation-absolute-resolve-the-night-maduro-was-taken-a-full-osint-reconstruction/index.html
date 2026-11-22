@@ -10,8 +10,8 @@
 <link rel="icon" href="/theme/icon.png">
 <link rel="apple-touch-icon" href="/theme/icon.png">
 <link rel="alternate" type="application/rss+xml" title="OSINT Me That" href="/feed.xml">
-<link rel="stylesheet" href="/theme/site.css?v=107c1c4d40">
-<script src="/theme/site.js?v=107c1c4d40" defer></script>
+<link rel="stylesheet" href="/theme/site.css?v=ea2b971e6c">
+<script src="/theme/site.js?v=ea2b971e6c" defer></script>
 <meta property="og:site_name" content="OSINT Me That">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Operation Absolute Resolve: The Night Maduro was Taken – A Full OSINT Reconstruction">
@@ -25,33 +25,61 @@
 <a class="skip" href="#main">Skip to content</a>
 <style>
 @font-face{font-family:'OSM Bar Sans';font-style:normal;font-weight:400 700;font-display:swap;src:url(/theme/fonts/instrument-sans-normal-latin.woff2) format('woff2')}
-.osm-bar{display:block;background:#0c1a2c;color:#e9eef4;border-bottom:1px solid #24405f;font:400 15px/1.4 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal}
-.osm-bar *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit}
-.osm-bar .osm-wrap{display:flex;align-items:center;gap:36px;max-width:1240px;min-height:68px;margin:0 auto;padding:0 32px}
+@font-face{font-family:'OSM Bar Mono';font-style:normal;font-weight:500;font-display:swap;src:url(/theme/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+.osm-bar{position:relative;z-index:50;display:block;background:#0a1626;color:#e9eef4;border-bottom:1px solid #2a4a6f;font:400 15px/1.4 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left;letter-spacing:normal;text-transform:none}
+.osm-bar *{box-sizing:border-box;margin:0;padding:0;font:inherit;letter-spacing:inherit;text-transform:inherit}
+.osm-bar .osm-wrap{display:flex;align-items:center;gap:30px;max-width:1240px;height:70px;margin:0 auto;padding:0 32px}
 .osm-bar a{color:inherit;text-decoration:none;background:none}
-.osm-bar a:focus-visible{outline:2px solid #3fb1c2;outline-offset:3px;border-radius:4px}
-.osm-bar nav a:focus-visible,.osm-bar .osm-about:focus-visible{outline:none;color:#fff;border-color:#3fb1c2}
-.osm-bar .osm-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:650;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
-.osm-bar .osm-brand img{display:block;width:34px;height:34px;max-width:none;border:0;border-radius:0;box-shadow:none}
-.osm-bar nav{flex:1;min-width:0}
-.osm-bar ul{display:flex;gap:26px;list-style:none}
+.osm-bar a:focus-visible,.osm-bar summary:focus-visible{outline:2px solid #3fb1c2;outline-offset:3px;border-radius:3px}
+.osm-bar ul{display:flex;list-style:none}
 .osm-bar li{list-style:none}
 .osm-bar li::before,.osm-bar li::marker{content:none}
-.osm-bar nav a,.osm-bar .osm-about{display:block;padding:22px 0 20px;border-bottom:2px solid transparent;color:#93a6bb;white-space:nowrap}
-.osm-bar nav a:hover,.osm-bar nav a[aria-current],.osm-bar .osm-about:hover,.osm-bar .osm-about[aria-current]{color:#fff;border-color:#3fb1c2}
-.osm-bar .osm-end{display:flex;align-items:center;margin-left:auto;white-space:nowrap}
-.osm-bar .osm-about{margin-right:18px}
-.osm-bar .osm-az,.osm-bar .osm-support{display:inline-block;padding:7px 14px;border:1px solid transparent;border-radius:4px;font-size:14.5px;font-weight:650;line-height:20px}
-.osm-bar .osm-az{margin-right:8px;color:#e9eef4;border-color:rgba(233,238,244,.32)}
-.osm-bar .osm-az:hover,.osm-bar .osm-az[aria-current]{background:rgba(233,238,244,.08);border-color:rgba(233,238,244,.7);color:#fff}
-.osm-bar .osm-mark{display:inline-block;width:9px;height:14px;margin-right:7px;vertical-align:-2px}
-.osm-bar .osm-phone{display:none}
-.osm-bar .osm-support{background:#f2b33d;border-color:#f2b33d;color:#17130b}
-.osm-bar .osm-support:hover{background:#f6c561;border-color:#f6c561;color:#17130b}
-@media (max-width:1180px){.osm-bar .osm-wrap{gap:24px}.osm-bar ul{gap:20px}.osm-bar .osm-support span{display:none}}
-@media (max-width:960px){.osm-bar .osm-wrap{flex-wrap:wrap;gap:0 16px;padding-top:12px;padding-bottom:4px}.osm-bar nav{order:3;flex-basis:100%}.osm-bar .osm-about,.osm-bar .osm-end .osm-az{display:none}.osm-bar .osm-phone{display:list-item}.osm-bar ul{flex-wrap:wrap;align-items:center;gap:0 20px}.osm-bar nav a{padding:12px 0 10px}.osm-bar nav .osm-az{padding:4px 10px;margin:4px 0;border-bottom-width:1px}}
-@media (max-width:600px){.osm-bar .osm-wrap{padding:14px 18px 6px}.osm-bar .osm-brand{font-size:17px}.osm-bar .osm-brand img{width:30px;height:30px}.osm-bar ul{gap:0 18px;font-size:14.5px}.osm-bar nav a{padding:8px 0 6px}.osm-bar nav .osm-az{font-size:14px;font-weight:600}.osm-bar .osm-support{padding:7px 13px}}
-</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/"><img src="/theme/logo.png" alt="" width="34" height="34">OSINT Me That</a><nav aria-label="Sections"><ul><li><a href="/investigations/" aria-current="page">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li class="osm-phone"><a href="/about-contact/">About</a></li><li class="osm-phone"><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li></ul></nav><div class="osm-end"><a class="osm-about" href="/about-contact/">About</a><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener">Support<span> on Ko-fi</span></a></div></div></header>
+.osm-bar .osm-brand{display:flex;align-items:center;gap:13px;flex:none;color:#fff}
+.osm-bar .osm-brand img{display:block;width:46px;height:46px;max-width:none;border:0;border-radius:50%;box-shadow:none;transition:transform .7s cubic-bezier(.3,1.5,.5,1)}
+.osm-bar .osm-brand:hover img{transform:rotate(-16deg)}
+.osm-bar .osm-name{display:flex;flex-direction:column}
+.osm-bar .osm-name b{font:700 23px/1 'OSM Bar Sans',system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.07em}
+.osm-bar .osm-name i{display:flex;justify-content:space-between;margin-top:5px;padding-right:.07em;font:500 10px/1 'OSM Bar Mono',ui-monospace,Menlo,Consolas,monospace;font-style:normal;color:#3fb1c2}
+.osm-bar .osm-rule{flex:none;width:1px;height:30px;background:#27425f}
+.osm-bar .osm-sections,.osm-bar .osm-end,.osm-bar .osm-menu{font:500 12px/1 'OSM Bar Mono',ui-monospace,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
+.osm-bar .osm-sections{flex:1;min-width:0}
+.osm-bar .osm-sections ul{gap:30px}
+.osm-bar .osm-sections a{position:relative;display:block;padding:29px 0 28px;color:#93a6bb;white-space:nowrap;transition:color .2s}
+.osm-bar .osm-sections a::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#e9eef4;transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.65,0,.25,1)}
+.osm-bar .osm-sections a:hover,.osm-bar .osm-sections a[aria-current]{color:#fff}
+.osm-bar .osm-sections a:hover::after,.osm-bar .osm-sections a[aria-current]::after{transform:scaleX(1);transform-origin:left}
+.osm-bar .osm-end{display:flex;align-items:center;gap:24px;flex:none;white-space:nowrap}
+.osm-bar .osm-end a{color:#b9c6d3;transition:color .2s,background .2s}
+.osm-bar .osm-end a:hover,.osm-bar .osm-end a[aria-current]{color:#fff}
+.osm-bar .osm-support{padding:8px 12px;border-radius:3px;background:rgba(242,179,61,.12);color:#f2b33d!important}
+.osm-bar .osm-support:hover{background:#f2b33d;color:#17130b!important}
+.osm-bar .osm-mark{display:inline-block;width:8px;height:12px;margin-right:7px;vertical-align:-2px;transform-origin:50% 72%}
+.osm-bar .osm-az:hover .osm-mark{animation:osm-needle 1.1s cubic-bezier(.3,.7,.4,1)}
+.osm-bar .osm-heart{display:inline-block;width:12px;height:11px;margin-right:7px;vertical-align:-1px}
+.osm-bar a:hover>.osm-heart{animation:osm-beat 1s ease-in-out infinite}
+@keyframes osm-needle{18%{transform:rotate(-38deg)}38%{transform:rotate(24deg)}56%{transform:rotate(-12deg)}72%{transform:rotate(5deg)}86%{transform:rotate(-2deg)}100%{transform:rotate(0)}}
+@keyframes osm-beat{0%,60%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.osm-bar .osm-menu{display:none;margin-left:auto}
+.osm-bar .osm-menu summary{display:flex;align-items:center;gap:9px;height:36px;padding:0 12px 0 10px;border:1px solid #2a4a6f;border-radius:6px;color:#e9eef4;list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+.osm-bar .osm-menu summary::-webkit-details-marker{display:none}
+.osm-bar .osm-menu summary::marker{content:''}
+.osm-bar .osm-menu[open] summary{background:#13253c}
+.osm-bar .osm-burger{position:relative;display:block;width:16px;height:12px}
+.osm-bar .osm-burger::before,.osm-bar .osm-burger::after,.osm-bar .osm-burger i{content:'';position:absolute;left:0;right:0;height:2px;border-radius:1px;background:currentColor;transition:transform .25s,opacity .2s,top .25s}
+.osm-bar .osm-burger::before{top:0}.osm-bar .osm-burger i{top:5px}.osm-bar .osm-burger::after{top:10px}
+.osm-bar .osm-menu[open] .osm-burger::before{top:5px;transform:rotate(45deg)}.osm-bar .osm-menu[open] .osm-burger i{opacity:0}.osm-bar .osm-menu[open] .osm-burger::after{top:5px;transform:rotate(-45deg)}
+.osm-bar .osm-panel{position:absolute;left:0;right:0;top:calc(100% + 1px);padding:6px 20px 20px;background:#0a1626;border-bottom:1px solid #2a4a6f;box-shadow:0 18px 30px -20px rgba(0,0,0,.6);animation:osm-drop .22s cubic-bezier(.2,.7,.2,1)}
+@keyframes osm-drop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.osm-bar .osm-panel ul{display:block}
+.osm-bar .osm-panel li a{display:block;padding:15px 0;font-size:14px;color:#d4dee8;border-bottom:1px solid #16293f}
+.osm-bar .osm-panel li a[aria-current]{color:#fff;box-shadow:inset 3px 0 #3fb1c2;padding-left:12px}
+.osm-bar .osm-panel .osm-gap{margin-top:10px}
+.osm-bar .osm-panel .osm-support{display:flex;align-items:center;justify-content:center;margin-top:16px;padding:14px;border-radius:6px;font-size:13px}
+@media (max-width:1180px){.osm-bar .osm-wrap{gap:22px}.osm-bar .osm-sections ul{gap:22px}.osm-bar .osm-end{gap:18px}}
+@media (max-width:1020px){.osm-bar .osm-wrap{height:58px;gap:0}.osm-bar .osm-panel{padding:6px 32px 20px}.osm-bar .osm-rule,.osm-bar .osm-sections,.osm-bar .osm-end{display:none}.osm-bar .osm-menu{display:block}.osm-bar .osm-brand{gap:10px}.osm-bar .osm-brand img{width:36px;height:36px}.osm-bar .osm-name b{font-size:19px}.osm-bar .osm-name i{margin-top:4px;font-size:8.5px}}
+@media (max-width:600px){.osm-bar .osm-wrap{padding:0 18px}.osm-bar .osm-panel{padding:4px 18px 16px}}
+@media (prefers-reduced-motion:reduce){.osm-bar *,.osm-bar *::before,.osm-bar *::after{animation:none!important;transition:none!important}}
+</style><header class="osm-bar"><div class="osm-wrap"><a class="osm-brand" href="/" aria-label="OSINT Me That"><img src="/theme/logo.png" alt="" width="46" height="46"><span class="osm-name" aria-hidden="true"><b>OSINT</b><i><span>M</span><span>E</span><span>&nbsp;</span><span>T</span><span>H</span><span>A</span><span>T</span></i></span></a><span class="osm-rule" aria-hidden="true"></span><nav class="osm-sections" aria-label="Sections"><ul><li><a href="/investigations/" aria-current="page">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li></ul></nav><div class="osm-end"><a href="/about-contact/">About</a><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener" aria-label="Support on Ko-fi"><svg class="osm-heart" viewBox="0 0 16 14" width="12" height="11" aria-hidden="true"><path fill="currentColor" d="M8 13.6 6.9 12.6C2.9 9 .3 6.6.3 3.8.3 1.5 2.1-.3 4.4-.3c1.3 0 2.6.6 3.6 1.6C9 .3 10.3-.3 11.6-.3c2.3 0 4.1 1.8 4.1 4.1 0 2.8-2.6 5.2-6.6 8.8Z"/></svg>Support</a></div><details class="osm-menu"><summary><span class="osm-burger" aria-hidden="true"><i></i></span>Menu</summary><nav class="osm-panel" aria-label="Menu"><ul><li><a href="/investigations/" aria-current="page">Investigations</a></li><li><a href="/conflict-watch/">Conflict Watch</a></li><li><a href="/methods-tools/">Methods &amp; Tools</a></li><li><a href="/maps/">Maps</a></li><li class="osm-gap"><a href="/about-contact/">About</a></li><li><a class="osm-az" href="/azimut/"><svg class="osm-mark" viewBox="5.8 1.8 12.4 19.6" width="9" height="14" aria-hidden="true"><path fill="#e3e3e3" d="M12 1.8 5.8 21.4 12 16.4Z"/><path fill="#e8a33d" d="M12 1.8 18.2 21.4 12 16.4Z"/></svg>Azimut</a></li></ul><a class="osm-support" href="https://ko-fi.com/osintmethat" rel="noopener"><svg class="osm-heart" viewBox="0 0 16 14" width="12" height="11" aria-hidden="true"><path fill="currentColor" d="M8 13.6 6.9 12.6C2.9 9 .3 6.6.3 3.8.3 1.5 2.1-.3 4.4-.3c1.3 0 2.6.6 3.6 1.6C9 .3 10.3-.3 11.6-.3c2.3 0 4.1 1.8 4.1 4.1 0 2.8-2.6 5.2-6.6 8.8Z"/></svg>Support on Ko-fi</a></nav></details></div></header>
 <main id="main">
 <div class="wrap article">
 <article class="post"><header class="post-head"><p class="kick"><a class="cat" href="/investigations/">Investigations</a><span class="where">Caracas, Venezuela · 10.4436, −66.9184</span></p><h1>Operation Absolute Resolve: The Night Maduro was Taken – A Full OSINT Reconstruction</h1><div class="byline"><a class="who" href="https://x.com/LoLManya/" rel="noopener"><img src="/theme/author.png" alt="" width="40" height="40">MPGeoint</a><p class="post-meta"><time datetime="2026-03-12">12 March 2026</time><span>27 min read</span></p></div></header><figure class="post-hero"><img src="/wp-content/uploads/2026/02/article_OAR.png" alt="" width="1047" height="408"><figcaption class="wp-element-caption"><span class="credit">Google Maps. Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies; map data ©2026 Google.</span></figcaption></figure><div class="post-grid has-toc"><details class="toc" open><summary>In this article</summary><ol><li><a href="#P1">1. Heliborne Infiltration: Under-the-Radar Approach</a></li><li><a href="#P2">2. Aerial Screen: Neutralization and Suppression of Defenses</a></li><li><a href="#P3">3. Timeline of Heliborne Operations: The Assault Window</a></li><li><a href="#P4">4. Operational Mapping</a></li><li><a href="#conclusion">Conclusion</a></li></ol></details><div class="post-body">

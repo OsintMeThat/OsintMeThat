@@ -4,6 +4,7 @@
 // 3. An outside video, post or map loads only when its placeholder is pressed.
 // 4. A long article's contents underline the section being read.
 // 5. The Contribute page sends a case bundle to the drop point.
+// 6. The lists' extras: places, a map's contents, counts, a category's atlas, About's numbers, the Azimut page.
 (function () {
   document.addEventListener('click', function (event) {
     var link = event.target.closest && event.target.closest('a.embed-load');
@@ -51,6 +52,8 @@
 
   var drop = document.querySelector('form[data-contribute]');
   if (drop && window.fetch && window.Promise) contribute(drop);
+
+  if (window.fetch && window.Promise) extras();
 
   // The Contribute form: Turnstile, then the drop point's three steps. /start takes the fields and the
   // token and answers a presigned upload; the file goes straight to it (XMLHttpRequest, for its progress);
@@ -140,7 +143,7 @@
         .then(function () {
           form.reset(); bar.hidden = true;
           form.classList.add('sent');
-          say('Received. I will write to you once I have read it. Your receipt: ' + id + ' (it is what a request to delete it names).');
+          say('Received. An e-mail will follow once it has been read. Your receipt: ' + id + ' (it is what a request to delete it names).');
         })
         .catch(function (err) {
           bar.hidden = true;
@@ -153,6 +156,172 @@
           ready();
         });
     });
+  }
+
+  // The lists' extras, all from what the site already holds: each article's place on its category's line,
+  // what each map holds, what each section head lists, a category's places and numbers, About's numbers,
+  // the Azimut page's step in view and the reader's system on its download button.
+  function extras() {
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+    function since(date) { return date ? 'since ' + MONTHS[+date.slice(5, 7) - 1] + ' ' + date.slice(0, 4) : ''; }
+    function stats(cls, parts) {
+      var line = el(cls === 'div' ? 'div' : 'p', 'stats');
+      parts.filter(Boolean).forEach(function (part, i) {
+        if (i) line.append(' · ');
+        line.append(i ? part : el('b', '', part));
+      });
+      return line;
+    }
+    var here = location.pathname.replace(/index\.html$/, '');
+    var box = document.querySelector('[data-atlas]');
+    var map = box ? JSON.parse(box.dataset.atlas) : null;
+
+    document.querySelectorAll('.sechead').forEach(function (h) {
+      var list = h.parentNode.querySelector('.az-list');
+      var n = list ? list.querySelectorAll(':scope > .az-item').length : 0;
+      if (n) h.append(el('span', 'n', list.classList.contains('az-maps') ? plural(n, 'map', 'maps') : plural(n, 'article', 'articles')));
+    });
+
+    // What a map holds, read from its own page (the data its reader draws), once its card comes near.
+    function holds(li) {
+      var a = li.querySelector('.az-title a'), cat = li.querySelector('.az-category');
+      if (!a || !cat || li.dataset.held) return Promise.resolve(null);
+      li.dataset.held = '1';
+      return fetch(a.getAttribute('href')).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
+        var node = new DOMParser().parseFromString(html, 'text/html').querySelector('script.az-map-data');
+        if (!node) return null;
+        var d = JSON.parse(node.textContent), n = { point: 0, line: 0, area: 0 };
+        (d.features || []).forEach(function (f) { n[f.kind === 'point' || f.kind === 'line' ? f.kind : 'area']++; });
+        var parts = [];
+        if (n.point) parts.push(plural(n.point, 'point', 'points'));
+        if (n.line) parts.push(plural(n.line, 'line', 'lines'));
+        if (n.area) parts.push(plural(n.area, 'area', 'areas'));
+        if ((d.days || []).length > 1) parts.push(plural(d.days.length, 'day', 'days'));
+        if (parts.length) cat.append(el('span', 'holds', parts.join(' · ')));
+        return n;
+      }).catch(function () { return null; });
+    }
+    var cards = [].slice.call(document.querySelectorAll('.az-item.is-map'));
+    if (here === '/maps/') {
+      Promise.all(cards.map(holds)).then(function (all) {
+        var head = document.querySelector('main .page-head');
+        var points = 0, maps = 0;
+        all.forEach(function (n) { if (n) { maps++; points += n.point; } });
+        var dates = [].map.call(document.querySelectorAll('.az-maps .az-meta time'), function (t) { return t.getAttribute('datetime'); }).sort();
+        if (head && maps) head.append(stats('p', [plural(maps, 'map', 'maps'), points ? plural(points, 'point', 'points') + ' placed' : '', since(dates[0])]));
+      });
+    } else if (cards.length && 'IntersectionObserver' in window) {
+      var near = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { near.unobserve(en.target); holds(en.target); } });
+      }, { rootMargin: '300px' });
+      cards.forEach(function (li) { near.observe(li); });
+    }
+
+    fetch('/articles.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.articles)) return;
+        var lines = data.articles.filter(function (a) { return a && a.layout !== 'map'; });
+        var by = {};
+        lines.forEach(function (a) { by[a.address] = a; });
+
+        // an article's place: a small world with its dot, then the place's first part
+        if (map) document.querySelectorAll('.az-item:not(.is-map)').forEach(function (li) {
+          var a = li.querySelector('.az-title a'), line = a && by[a.getAttribute('href')];
+          var cat = li.querySelector('.az-category'), place = line && placeOf(line.place);
+          if (!place || !cat) return;
+          var xy = project(map, place.lon, place.lat), loc = el('span', 'loc'), mini = el('span', 'mini'), dot = el('i');
+          dot.style.left = (xy[0] / map.w * 100) + '%';
+          dot.style.top = (xy[1] / map.h * 100) + '%';
+          mini.append(dot);
+          loc.title = coords(place.lat) + ', ' + coords(place.lon);
+          loc.append(mini, el('span', '', place.name.split(',')[0]));
+          cat.append(loc);
+        });
+
+        // About: what the site holds, and in how many publications it was cited
+        var about = here === '/about-contact/' && document.querySelector('.phead .wrap');
+        if (about) {
+          var outlets = {};
+          document.querySelectorAll('#cited-by .cites li span').forEach(function (s) { outlets[s.textContent.split(' · ')[0].trim()] = 1; });
+          var cited = Object.keys(outlets).length;
+          about.append(stats('div', [plural(lines.length, 'article', 'articles'), (data.maps || []).length ? plural(data.maps.length, 'map', 'maps') : '',
+            cited ? 'cited in ' + plural(cited, 'publication', 'publications') : '']));
+        }
+
+        // A category: its numbers, and the atlas framed on its places
+        var band = document.querySelector('.cat-band[data-category]');
+        if (!band) return;
+        var name = band.dataset.category;
+        var mine = lines.filter(function (a) { return a.category === name; });
+        var maps = (data.maps || []).filter(function (m) { return m.category === name; });
+        var places = [];
+        mine.forEach(function (a) {
+          var p = placeOf(a.place);
+          if (!p) return;
+          if (places.filter(function (g) { return Math.abs(g.lat - p.lat) < 2.5 && Math.abs(g.lon - p.lon) < 2.5; }).length) return;
+          places.push({ lat: p.lat, lon: p.lon, name: p.name, xy: project(map, p.lon, p.lat) });
+        });
+        var first = mine.map(function (a) { return a.date || ''; }).filter(Boolean).sort()[0];
+        var head = band.querySelector('.page-head');
+        if (mine.length) head.append(stats('p', [plural(mine.length, 'article', 'articles'), maps.length ? plural(maps.length, 'map', 'maps') : '',
+          places.length ? plural(places.length, 'place', 'places') : '', since(first)]));
+        var img = band.querySelector('.atlas');
+        function draw() {
+          var cw = band.clientWidth, ch = band.clientHeight;
+          if (!cw || !ch) return;
+          band.querySelectorAll('.cat-pin').forEach(function (p) { p.remove(); });
+          var cover = Math.max(cw / map.w, ch / map.h), s = cover, cx = map.w / 2, cy = map.h / 2;
+          if (places.length) {
+            var xs = places.map(function (g) { return g.xy[0]; }), ys = places.map(function (g) { return g.xy[1]; });
+            var spanX = Math.max.apply(null, xs) - Math.min.apply(null, xs), spanY = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+            cx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2;
+            cy = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2;
+            s = Math.min(cover * 4, spanX ? 0.3 * cw / spanX : Infinity, spanY ? 0.5 * ch / spanY : Infinity);
+            s = Math.max(cover, s);
+          }
+          var ox = Math.min(0, Math.max(cw - map.w * s, (cw < 900 ? 0.78 : 0.74) * cw - cx * s));
+          var oy = Math.min(0, Math.max(ch - map.h * s, 0.5 * ch - cy * s));
+          img.style.width = map.w * s + 'px'; img.style.height = map.h * s + 'px';
+          img.style.left = ox + 'px'; img.style.top = oy + 'px';
+          img.classList.add('placed');
+          places.forEach(function (g) {
+            var pin = el('div', 'cat-pin'), label = el('span', '', g.name);
+            pin.style.left = g.xy[0] * s + ox + 'px';
+            pin.style.top = g.xy[1] * s + oy + 'px';
+            label.append(el('small', '', coords(g.lat) + ', ' + coords(g.lon)));
+            pin.append(label);
+            band.append(pin);
+          });
+        }
+        draw();
+        var queued = false;
+        window.addEventListener('resize', function () {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(function () { queued = false; draw(); });
+        });
+      })
+      .catch(function () {});
+
+    // The Azimut page: the step in view underlined in the index; the download names the reader's system
+    var steps = document.querySelectorAll('.azstep[id]'), index = document.querySelectorAll('.azindex a');
+    if (steps.length && index.length && 'IntersectionObserver' in window) {
+      var reading = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          index.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id); });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px' });
+      steps.forEach(function (s) { reading.observe(s); });
+    }
+    var get = document.querySelector('.toolhead .go .btn:not(.ghost)');
+    if (get) {
+      var ua = navigator.userAgent, pf = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+      var os = /Android|iPhone|iPad/.test(ua) ? '' : /Win/.test(pf) ? 'Windows' : /Mac/.test(pf) ? 'macOS' : /Linux/.test(pf) ? 'Linux' : '';
+      if (os) get.textContent = 'Download for ' + os;
+    }
   }
 
   function el(tag, cls, text) {

@@ -6,16 +6,21 @@
  },
  "articles": [
   {
-   "address": "/yemen/",
-   "title": "YEMEN",
-   "summary": "",
+   "address": "/web-article/",
+   "title": "Web article",
+   "summary": "Ceci est un test",
    "date": "2026-11-22",
    "date_label": "22 November 2026",
    "category": "",
    "author": "MPGeoint",
-   "layout": "map",
-   "image": "/yemen/cover.jpg",
-   "maps": []
+   "layout": "article",
+   "image": "/web-article/cover.jpg",
+   "maps": [
+    {
+     "title": "YEMEN",
+     "address": "/yemen/"
+    }
+   ]
   },
   {
    "address": "/bab-el-mandab-2026/",
@@ -107,7 +112,10 @@
    "author": "MPGeoint",
    "layout": "map",
    "image": "/yemen/cover.jpg",
-   "article": null
+   "article": {
+    "title": "Web article",
+    "address": "/web-article/"
+   }
   },
   {
    "address": "/bab-el-mandab-2026-map/",

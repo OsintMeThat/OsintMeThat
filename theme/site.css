@@ -460,6 +460,7 @@ code { font-family: var(--mono); font-size: 0.88em; }
 .az-links .az-map { display: none; }
 .az-onmap:hover span::before, .az-onmap:focus-visible span::before { content: 'Open the '; }
 .az-item.is-map .az-category::after { content: '\00b7\00a0Map'; }
+.az-item.is-map .az-category.is-bare::after { content: 'Map'; }
 /* Corner marks close in on a cover, or a card of steps, under the pointer: the corners of a map sheet. */
 .az-cover { position: relative; }
 .az-cover::after { --c: #fff; inset: 10px; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, .55)); }

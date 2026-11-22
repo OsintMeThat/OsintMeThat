@@ -245,7 +245,7 @@
 
     // What a map holds, read from its own page (the data its reader draws), once its card comes near.
     function holds(li) {
-      var a = li.querySelector('.az-title a'), cat = li.querySelector('.az-category');
+      var a = li.querySelector('.az-title a'), cat = categoryLine(li);
       if (!a || !cat || li.dataset.held) return Promise.resolve(null);
       li.dataset.held = '1';
       return fetch(a.getAttribute('href')).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
@@ -263,6 +263,8 @@
       }).catch(function () { return null; });
     }
     var cards = [].slice.call(document.querySelectorAll('.az-item.is-map'));
+    // a map with no category still says it is one, on a line of its own
+    cards.forEach(categoryLine);
     if (here === '/maps/') {
       Promise.all(cards.map(holds)).then(function (all) {
         var head = document.querySelector('main .page-head');
@@ -289,7 +291,7 @@
         // an article's place: a small world with its dot, then the place's first part
         if (map) document.querySelectorAll('.az-item:not(.is-map)').forEach(function (li) {
           var a = li.querySelector('.az-title a'), line = a && by[a.getAttribute('href')];
-          var cat = li.querySelector('.az-category'), place = line && placeOf(line.place);
+          var place = line && placeOf(line.place), cat = place && categoryLine(li);
           if (!place || !cat) return;
           var xy = project(map, place.lon, place.lat), loc = el('span', 'loc'), mini = el('span', 'mini'), dot = el('i');
           dot.style.left = (xy[0] / map.w * 100) + '%';
@@ -382,6 +384,15 @@
       var os = /Android|iPhone|iPad/.test(ua) ? '' : /Win/.test(pf) ? 'Windows' : /Mac/.test(pf) ? 'macOS' : /Linux/.test(pf) ? 'Linux' : '';
       if (os) get.textContent = 'Download for ' + os;
     }
+  }
+
+  // An item's category line, where its place or what a map holds stands: made bare when the item has no category.
+  function categoryLine(li) {
+    var line = li.querySelector('.az-category'), title = li.querySelector('.az-title');
+    if (line || !title) return line;
+    line = el('span', 'az-category is-bare');
+    title.before(line);
+    return line;
   }
 
   function el(tag, cls, text) {

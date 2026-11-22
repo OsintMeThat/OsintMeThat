@@ -131,7 +131,12 @@
    }
   }
  ],
- "pages": [],
+ "pages": [
+  {
+   "title": "Geolocation report",
+   "address": "/geolocation-report-test/"
+  }
+ ],
  "renamed": {
   "Methods & Tool": "Methods & Tools"
  },

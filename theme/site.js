@@ -194,7 +194,8 @@
       say('Checking…');
       var id = '';
       post('/start', {
-        name: f.author.value.trim(), email: f.email.value.trim(), title: f.title.value.trim(), note: f.note.value.trim(),
+        name: f.author.value.trim(), email: f.email.value.trim(), title: f.title.value.trim(), category: f.category.value,
+        note: f.note.value.trim(),
         rights: f.made.checked, publish: f.name.checked, pictures: f.pictures.checked, size: file.size, token: token,
         invite: invite.hidden ? undefined : f.invite.value.trim()
       })

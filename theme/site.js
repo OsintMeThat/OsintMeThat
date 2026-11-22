@@ -121,7 +121,7 @@
   function contribute(form) {
     var worker = (form.dataset.worker || '').replace(/\/+$/, '');
     var sitekey = form.dataset.sitekey || '';
-    var maxBytes = (Number(form.dataset.maxMb) || 500) * 1024 * 1024;
+    var maxBytes = (Number(form.dataset.maxMb) || 1024) * 1024 * 1024;
     var send = form.querySelector('button[type=submit]');
     var state = form.querySelector('.state');
     var bar = form.querySelector('progress.bar');
@@ -188,7 +188,7 @@
       if (!form.checkValidity()) { form.reportValidity(); return; }
       if (/\.azimut\.enc$/i.test(file.name)) { say('Send the bundle unsealed: export the case again without a password.', true); return; }
       if (!/\.azimut\.zip$/i.test(file.name)) { say('Choose the case bundle Azimut exports, a file ending in .azimut.zip.', true); return; }
-      if (file.size > maxBytes) { say('This bundle is over ' + Math.max(1, Math.round(maxBytes / 1048576)) + ' MB. Leave out what the article does not use and export again.', true); return; }
+      if (file.size > maxBytes) { var mb = Math.max(1, Math.round(maxBytes / 1048576)); say('This bundle is over ' + (mb >= 1024 ? (mb / 1024) + ' GB' : mb + ' MB') + '. Export it for review again without its source videos.', true); return; }
       send.disabled = true;
       bar.hidden = false; bar.value = 0;
       say('Checking…');

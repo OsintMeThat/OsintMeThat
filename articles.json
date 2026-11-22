@@ -6,6 +6,18 @@
  },
  "articles": [
   {
+   "address": "/geolocation-report-test/",
+   "title": "Geolocation report",
+   "summary": "Location not established yet.",
+   "date": "2026-11-22",
+   "date_label": "22 November 2026",
+   "category": "Methods & Tools",
+   "author": "MPGeoint",
+   "layout": "article",
+   "image": "/geolocation-report-test/cover.jpg",
+   "maps": []
+  },
+  {
    "address": "/bab-el-mandab-2026/",
    "title": "The fall of the Bab al-Mandab front, Sep-Nov 2026",
    "summary": "On 9 October 2026, Saudi Arabia's ambassador to Yemen wrote on X that Bab al-Mandab had been \"cleared of the remnants of the Houthi militia\" (his post, 9 Oct), as AFP reported the next day (AFP via…",
@@ -131,12 +143,7 @@
    }
   }
  ],
- "pages": [
-  {
-   "title": "Geolocation report",
-   "address": "/geolocation-report-test/"
-  }
- ],
+ "pages": [],
  "renamed": {
   "Methods & Tool": "Methods & Tools"
  },
